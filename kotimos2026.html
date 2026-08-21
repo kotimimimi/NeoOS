@@ -1,0 +1,5896 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<title>KotimOS</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --bg: #07101f;
+    --bg2: #0d1830;
+    --panel: rgba(17,29,55,.78);
+    --panel2: rgba(24,39,72,.82);
+    --border: rgba(255,255,255,.11);
+    --text: #f5f7ff;
+    --muted: #9ba9c7;
+    --blue: #4da3ff;
+    --violet: #8b5cf6;
+    --cyan: #39d9ff;
+    --danger: #ff5577;
+    --success: #4ade80;
+    --shadow: 0 25px 70px rgba(0,0,0,.45);
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 15% 15%, #173d72 0, transparent 32%),
+        radial-gradient(circle at 85% 20%, #35216b 0, transparent 30%),
+        radial-gradient(circle at 50% 100%, #071c39 0, transparent 40%),
+        var(--bg);
+    color: var(--text);
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* =========================================================
+   DESKTOP
+   ========================================================= */
+
+#desktop {
+    position: fixed;
+    inset: 0 0 72px 0;
+    overflow: hidden;
+}
+
+.wallpaper {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.wallpaper::before,
+.wallpaper::after {
+    content: "";
+    position: absolute;
+    width: 45vw;
+    height: 45vw;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: .28;
+}
+
+.wallpaper::before {
+    background: #247cff;
+    top: -20%;
+    left: -10%;
+}
+
+.wallpaper::after {
+    background: #9d42ff;
+    right: -10%;
+    bottom: -20%;
+}
+
+/* =========================================================
+   DESKTOP ICONS
+   ========================================================= */
+
+.desktop-icons {
+    position: relative;
+    z-index: 2;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 92px);
+    gap: 18px;
+    width: min(100%, 600px);
+}
+
+.desktop-icon {
+    width: 82px;
+    min-height: 92px;
+    padding: 8px 4px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: transparent;
+    color: white;
+    text-align: center;
+}
+
+.desktop-icon:hover {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.08);
+}
+
+.desktop-icon:active {
+    transform: scale(.96);
+}
+
+.desktop-icon .icon {
+    width: 54px;
+    height: 54px;
+    margin: auto;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(77,163,255,.95),
+            rgba(139,92,246,.95)
+        );
+    box-shadow:
+        0 12px 30px rgba(46,105,255,.3);
+}
+
+.desktop-icon span {
+    display: block;
+    margin-top: 7px;
+    font-size: 12px;
+    text-shadow: 0 2px 8px #000;
+}
+
+/* =========================================================
+   WINDOWS
+   ========================================================= */
+
+.window {
+    position: absolute;
+    z-index: 10;
+
+    min-width: 300px;
+    min-height: 220px;
+
+    width: 720px;
+    height: 520px;
+
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 96px);
+
+    border: 1px solid var(--border);
+    border-radius: 20px;
+
+    background: rgba(8,16,32,.82);
+
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+
+    box-shadow: var(--shadow);
+
+    overflow: hidden;
+
+    /*
+     * WAŻNE:
+     * Domyślnie każde okno jest ukryte.
+     */
+    display: none;
+}
+
+.window.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.window.fullscreen {
+    inset: 10px 10px 10px 10px !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+}
+
+.titlebar {
+    height: 48px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 0 12px;
+
+    background: rgba(255,255,255,.055);
+    border-bottom: 1px solid var(--border);
+
+    user-select: none;
+}
+
+.titlebar-icon {
+    width: 31px;
+    height: 31px;
+
+    border-radius: 9px;
+
+    display: grid;
+    place-items: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--blue),
+            var(--violet)
+        );
+}
+
+.titlebar-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.window-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.window-buttons button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+
+    border: 0;
+    border-radius: 9px;
+
+    color: white;
+    background: rgba(255,255,255,.07);
+}
+
+.window-buttons button:hover {
+    background: rgba(255,255,255,.14);
+}
+
+.window-buttons .close:hover {
+    background: var(--danger);
+}
+
+.window-content {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+}
+
+/* =========================================================
+   TASKBAR
+   ========================================================= */
+
+#taskbar {
+    position: fixed;
+    z-index: 1000;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 72px;
+    padding: 8px 12px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background: rgba(6,12,26,.84);
+
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+
+    border-top: 1px solid var(--border);
+}
+
+.start-button {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2388ff,
+            #8149ff
+        );
+
+    font-size: 25px;
+
+    box-shadow:
+        0 10px 30px rgba(58,110,255,.3);
+}
+
+.task-apps {
+    display: flex;
+    gap: 7px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.task-app {
+    min-width: 46px;
+    width: 46px;
+    height: 46px;
+
+    border: 1px solid transparent;
+    border-radius: 13px;
+
+    background: rgba(255,255,255,.055);
+    color: white;
+
+    font-size: 20px;
+}
+
+.task-app:hover {
+    background: rgba(255,255,255,.11);
+}
+
+.system-tray {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 0 8px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+#clock {
+    color: white;
+    font-weight: 700;
+}
+
+/* =========================================================
+   START MENU
+   ========================================================= */
+
+#startMenu {
+    position: fixed;
+    z-index: 1100;
+
+    left: 12px;
+    bottom: 82px;
+
+    width: min(430px, calc(100vw - 24px));
+    max-height: min(650px, calc(100vh - 100px));
+
+    padding: 18px;
+
+    border: 1px solid var(--border);
+    border-radius: 24px;
+
+    background: rgba(8,16,34,.91);
+
+    backdrop-filter: blur(30px);
+
+    box-shadow: var(--shadow);
+
+    display: none;
+
+    overflow: auto;
+}
+
+#startMenu.open {
+    display: block;
+}
+
+.start-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 18px;
+}
+
+.kotim-logo {
+    width: 50px;
+    height: 50px;
+
+    border-radius: 16px;
+
+    display: grid;
+    place-items: center;
+
+    font-size: 27px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #35a7ff,
+            #934cff
+        );
+}
+
+.start-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.start-header p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.start-search {
+    width: 100%;
+
+    padding: 13px 15px;
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    outline: none;
+
+    color: white;
+    background: rgba(255,255,255,.06);
+
+    margin-bottom: 15px;
+}
+
+.start-search:focus {
+    border-color: var(--blue);
+}
+
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.start-app {
+    min-height: 82px;
+
+    border: 1px solid transparent;
+    border-radius: 15px;
+
+    color: white;
+    background: rgba(255,255,255,.045);
+}
+
+.start-app:hover {
+    background: rgba(255,255,255,.09);
+    border-color: var(--border);
+}
+
+.start-app b {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 5px;
+}
+
+.start-app span {
+    font-size: 11px;
+}
+
+/* =========================================================
+   BROWSER
+   ========================================================= */
+
+/*
+ * NIE DAJEMY tutaj display:flex.
+ * .window.active steruje widocznością.
+ */
+
+.browser {
+    flex-direction: column;
+}
+
+.browser-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px;
+
+    border-bottom: 1px solid var(--border);
+
+    background: rgba(0,0,0,.15);
+}
+
+.browser-toolbar button {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+
+    border: 0;
+    border-radius: 9px;
+
+    color: white;
+    background: rgba(255,255,255,.07);
+}
+
+.browser-toolbar button:hover {
+    background: rgba(255,255,255,.14);
+}
+
+.browser-url {
+    flex: 1;
+    min-width: 0;
+
+    padding: 9px 13px;
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    outline: none;
+
+    color: white;
+    background: rgba(255,255,255,.06);
+}
+
+.browser-url:focus {
+    border-color: var(--blue);
+}
+
+.browser-frame-wrap {
+    position: relative;
+
+    flex: 1;
+    min-height: 0;
+
+    background: white;
+}
+
+#browserFrame {
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+
+    display: block;
+}
+
+.browser-home {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 30px;
+
+    color: white;
+
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            #1d4c87,
+            transparent 40%
+        ),
+        radial-gradient(
+            circle at 80% 80%,
+            #45236f,
+            transparent 40%
+        ),
+        #091327;
+}
+
+.browser-home.hidden {
+    display: none;
+}
+
+.browser-home h1 {
+    font-size: clamp(30px,7vw,55px);
+    margin: 0;
+}
+
+.browser-home p {
+    color: var(--muted);
+}
+
+.browser-home input {
+    width: min(500px,100%);
+
+    padding: 14px;
+
+    border-radius: 12px;
+    border: 1px solid var(--border);
+
+    background: rgba(255,255,255,.08);
+
+    color: white;
+
+    outline: none;
+}
+
+/* =========================================================
+   AI CLUB
+   ========================================================= */
+
+.ai-layout {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-top {
+    padding: 18px;
+
+    border-bottom: 1px solid var(--border);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(38,130,255,.16),
+            rgba(139,92,246,.12)
+        );
+}
+
+.ai-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-logo {
+    width: 50px;
+    height: 50px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 15px;
+
+    font-size: 27px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3da8ff,
+            #8b5cf6
+        );
+}
+
+.ai-brand h2 {
+    margin: 0;
+}
+
+.ai-brand p {
+    margin: 4px 0 0;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.ai-status {
+    margin-top: 12px;
+
+    font-size: 12px;
+
+    color: var(--muted);
+}
+
+.ai-main {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+}
+
+.ai-models {
+    width: 260px;
+    flex-shrink: 0;
+
+    padding: 12px;
+
+    overflow: auto;
+
+    border-right: 1px solid var(--border);
+}
+
+.ai-model-card {
+    padding: 12px;
+
+    margin-bottom: 8px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.04);
+}
+
+.ai-model-card:hover {
+    background: rgba(255,255,255,.07);
+}
+
+.ai-model-card h3 {
+    margin: 0 0 5px;
+    font-size: 13px;
+}
+
+.ai-model-card p {
+    margin: 0 0 9px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.ai-model-card button {
+    width: 100%;
+
+    border: 0;
+
+    padding: 8px;
+
+    border-radius: 9px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            90deg,
+            #278fff,
+            #7549ef
+        );
+}
+
+.ai-chat {
+    min-width: 0;
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-chat-header {
+    padding: 12px 15px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+#aiChatModel {
+    font-weight: 700;
+}
+
+#aiChatProvider {
+    margin-top: 3px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+#aiMessages {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: auto;
+
+    padding: 15px;
+}
+
+.ai-message {
+    max-width: 85%;
+
+    padding: 11px 13px;
+
+    margin-bottom: 10px;
+
+    border-radius: 14px;
+
+    line-height: 1.45;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+}
+
+.ai-message.system {
+    margin-left: auto;
+    margin-right: auto;
+
+    max-width: 95%;
+
+    text-align: center;
+
+    color: var(--muted);
+
+    background: transparent;
+
+    font-size: 12px;
+}
+
+.ai-message.user {
+    margin-left: auto;
+
+    background:
+        linear-gradient(
+            135deg,
+            #227fe8,
+            #6744db
+        );
+}
+
+.ai-message.ai {
+    background: rgba(255,255,255,.075);
+
+    border: 1px solid var(--border);
+}
+
+.ai-input {
+    display: flex;
+
+    gap: 7px;
+
+    padding: 10px;
+
+    border-top: 1px solid var(--border);
+}
+
+.ai-input textarea {
+    min-width: 0;
+
+    flex: 1;
+
+    height: 43px;
+
+    resize: none;
+
+    outline: none;
+
+    border: 1px solid var(--border);
+
+    border-radius: 11px;
+
+    padding: 11px;
+
+    color: white;
+
+    background: rgba(255,255,255,.055);
+}
+
+.ai-input button {
+    width: 48px;
+
+    border: 0;
+
+    border-radius: 11px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2b91ff,
+            #7549ef
+        );
+}
+
+/* =========================================================
+   FILE MANAGER
+   ========================================================= */
+
+.file-manager {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.file-toolbar {
+    display: flex;
+
+    gap: 7px;
+
+    padding: 10px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.file-toolbar button {
+    border: 0;
+
+    padding: 8px 11px;
+
+    border-radius: 9px;
+
+    color: white;
+
+    background: rgba(255,255,255,.07);
+}
+
+.file-path {
+    padding: 10px 14px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.files-grid {
+    padding: 15px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill,minmax(100px,1fr));
+
+    gap: 10px;
+
+    overflow: auto;
+}
+
+.file-item {
+    padding: 15px 8px;
+
+    text-align: center;
+
+    border: 1px solid transparent;
+
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.04);
+
+    color: white;
+}
+
+.file-item:hover {
+    border-color: var(--border);
+
+    background: rgba(255,255,255,.08);
+}
+
+.file-icon {
+    font-size: 35px;
+
+    margin-bottom: 7px;
+}
+
+.file-name {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+}
+
+/* =========================================================
+   NOTEPAD
+   ========================================================= */
+
+.notepad {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.notepad-toolbar {
+    display: flex;
+
+    gap: 7px;
+
+    padding: 10px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.notepad-toolbar button {
+    padding: 8px 12px;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    color: white;
+
+    background: rgba(255,255,255,.07);
+}
+
+#notepadText {
+    flex: 1;
+
+    min-height: 0;
+
+    resize: none;
+
+    border: 0;
+
+    outline: none;
+
+    padding: 18px;
+
+    color: white;
+
+    background: rgba(0,0,0,.18);
+
+    font-family: monospace;
+
+    line-height: 1.6;
+}
+
+/* =========================================================
+   CALCULATOR
+   ========================================================= */
+
+.calculator {
+    max-width: 400px;
+
+    margin: auto;
+
+    padding: 20px;
+}
+
+.calc-display {
+    width: 100%;
+    height: 70px;
+
+    margin-bottom: 10px;
+
+    padding: 15px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 14px;
+
+    outline: none;
+
+    color: white;
+
+    background: rgba(255,255,255,.06);
+
+    text-align: right;
+
+    font-size: 25px;
+}
+
+.calc-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap: 8px;
+}
+
+.calc-grid button {
+    height: 58px;
+
+    border: 0;
+
+    border-radius: 13px;
+
+    color: white;
+
+    background: rgba(255,255,255,.07);
+
+    font-size: 17px;
+}
+
+.calc-grid button:hover {
+    background: rgba(255,255,255,.13);
+}
+
+.calc-grid .equals {
+    background:
+        linear-gradient(
+            135deg,
+            #278fff,
+            #7549ef
+        );
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.settings {
+    padding: 20px;
+}
+
+.setting-section {
+    margin-bottom: 25px;
+}
+
+.setting-section h3 {
+    margin-top: 0;
+}
+
+.setting-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.setting-row label {
+    flex: 1;
+}
+
+.setting-row small {
+    display: block;
+
+    color: var(--muted);
+
+    margin-top: 3px;
+}
+
+.setting-row input[type="color"] {
+    width: 50px;
+    height: 34px;
+
+    border: 0;
+
+    background: transparent;
+}
+
+/* =========================================================
+   ABOUT
+   ========================================================= */
+
+.about {
+    height: 100%;
+
+    display: grid;
+
+    place-items: center;
+
+    padding: 30px;
+
+    text-align: center;
+}
+
+.about-logo {
+    width: 100px;
+    height: 100px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin: auto;
+
+    border-radius: 30px;
+
+    font-size: 52px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #238eff,
+            #914cff
+        );
+
+    box-shadow:
+        0 25px 70px rgba(64,111,255,.35);
+}
+
+.about h1 {
+    font-size: 34px;
+
+    margin-bottom: 4px;
+}
+
+.about p {
+    color: var(--muted);
+}
+
+/* =========================================================
+   CATAPPS
+   ========================================================= */
+
+.catapps {
+    height: 100%;
+
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+.catapps-header {
+    padding: 18px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    border-bottom: 1px solid var(--border);
+
+    background:
+        linear-gradient(
+            120deg,
+            rgba(50,145,255,.16),
+            rgba(139,92,246,.14)
+        );
+}
+
+.catapps-header h1 {
+    margin: 0;
+
+    font-size: 23px;
+}
+
+.catapps-header p {
+    margin: 4px 0 0;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.catapps-header button,
+.catapps-editor-buttons button {
+    border: 0;
+
+    border-radius: 11px;
+
+    padding: 10px 14px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #278fff,
+            #7549ef
+        );
+}
+
+.catapps-tabs {
+    display: flex;
+
+    gap: 7px;
+
+    padding: 10px;
+
+    border-bottom: 1px solid var(--border);
+
+    overflow-x: auto;
+}
+
+.catapps-tab {
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 9px 13px;
+
+    color: white;
+
+    background: rgba(255,255,255,.05);
+
+    white-space: nowrap;
+}
+
+.catapps-tab.active {
+    background:
+        linear-gradient(
+            135deg,
+            #278fff,
+            #7549ef
+        );
+}
+
+.catapps-page {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow: auto;
+
+    padding: 15px;
+}
+
+.catapps-search {
+    margin-bottom: 14px;
+}
+
+.catapps-search input {
+    width: 100%;
+
+    padding: 12px 14px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 11px;
+
+    outline: none;
+
+    color: white;
+
+    background: rgba(255,255,255,.055);
+}
+
+.catapps-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(auto-fill,minmax(190px,1fr));
+
+    gap: 10px;
+}
+
+.catapp-card {
+    padding: 15px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 17px;
+
+    background: rgba(255,255,255,.045);
+}
+
+.catapp-card:hover {
+    background: rgba(255,255,255,.075);
+}
+
+.catapp-icon {
+    width: 55px;
+    height: 55px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin-bottom: 10px;
+
+    border-radius: 15px;
+
+    font-size: 28px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(77,163,255,.9),
+            rgba(139,92,246,.9)
+        );
+}
+
+.catapp-card h3 {
+    margin: 0 0 5px;
+}
+
+.catapp-card p {
+    min-height: 35px;
+
+    margin: 0 0 10px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.catapp-meta {
+    color: #8292b2;
+
+    font-size: 10px;
+
+    margin-bottom: 10px;
+}
+
+.catapp-actions {
+    display: flex;
+
+    gap: 6px;
+}
+
+.catapp-actions button {
+    flex: 1;
+
+    border: 0;
+
+    padding: 8px;
+
+    border-radius: 9px;
+
+    color: white;
+
+    background: rgba(255,255,255,.08);
+}
+
+.catapp-actions button.primary {
+    background:
+        linear-gradient(
+            90deg,
+            #278fff,
+            #7549ef
+        );
+}
+
+.catapp-actions button.danger {
+    background: rgba(255,70,100,.18);
+}
+
+.catapps-empty {
+    padding: 40px;
+
+    text-align: center;
+
+    color: var(--muted);
+}
+
+.catapps-editor {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+.catapps-editor input,
+.catapps-editor textarea {
+    width: 100%;
+
+    padding: 11px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 11px;
+
+    outline: none;
+
+    color: white;
+
+    background: rgba(255,255,255,.05);
+}
+
+.catapps-editor textarea {
+    min-height: 100px;
+
+    resize: vertical;
+
+    font-family: monospace;
+}
+
+.catapps-editor-buttons {
+    display: flex;
+
+    gap: 8px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:700px) {
+
+    #desktop {
+        inset: 0 0 64px 0;
+    }
+
+    #taskbar {
+        height: 64px;
+
+        padding: 6px 8px;
+    }
+
+    .start-button {
+        width: 48px;
+        height: 48px;
+    }
+
+    .task-app {
+        width: 43px;
+        min-width: 43px;
+        height: 43px;
+    }
+
+    .system-tray {
+        font-size: 11px;
+
+        padding: 0 2px;
+    }
+
+    .window {
+        left: 6px !important;
+        top: 6px !important;
+
+        width:
+            calc(100vw - 12px) !important;
+
+        height:
+            calc(100vh - 78px) !important;
+
+        max-width: none;
+        max-height: none;
+
+        border-radius: 16px;
+    }
+
+    .desktop-icons {
+        grid-template-columns:
+            repeat(4,76px);
+
+        padding: 12px;
+
+        gap: 8px;
+    }
+
+    .desktop-icon {
+        width: 72px;
+    }
+
+    .desktop-icon .icon {
+        width: 47px;
+        height: 47px;
+
+        font-size: 23px;
+    }
+
+    .desktop-icon span {
+        font-size: 10px;
+    }
+
+    .ai-main {
+        flex-direction: column;
+    }
+
+    .ai-models {
+        width: 100%;
+        height: 130px;
+
+        flex-shrink: 0;
+
+        display: flex;
+
+        gap: 8px;
+
+        overflow-x: auto;
+
+        border-right: 0;
+
+        border-bottom: 1px solid var(--border);
+    }
+
+    .ai-model-card {
+        width: 190px;
+        min-width: 190px;
+
+        margin: 0;
+    }
+
+    .ai-model-card p {
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+    }
+
+    .apps-grid {
+        grid-template-columns:
+            repeat(3,1fr);
+    }
+
+    .catapps-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .catapps-grid {
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+    }
+
+    .catapp-card {
+        padding: 11px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="desktop">
+
+<div class="wallpaper"></div>
+
+<div class="desktop-icons">
+
+    <button class="desktop-icon"
+            onclick="openApp('browser')">
+        <div class="icon">🌐</div>
+        <span>Browser</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('aiclub')">
+        <div class="icon">🐱</div>
+        <span>AI Club</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('catapps')">
+        <div class="icon">🛍️</div>
+        <span>CatApps</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('files')">
+        <div class="icon">📁</div>
+        <span>Files</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('notepad')">
+        <div class="icon">📝</div>
+        <span>Notepad</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('calculator')">
+        <div class="icon">🧮</div>
+        <span>Calculator</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('settings')">
+        <div class="icon">⚙️</div>
+        <span>Settings</span>
+    </button>
+
+    <button class="desktop-icon"
+            onclick="openApp('about')">
+        <div class="icon">🐈</div>
+        <span>About</span>
+    </button>
+
+</div>
+
+
+<!-- ======================================================
+     BROWSER
+     ====================================================== -->
+
+<section class="window browser"
+         id="window-browser"
+         style="left:8%;top:8%;">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">🌐</div>
+
+        <div class="titlebar-title">
+            Kotim Browser
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('browser')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('browser')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('browser')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="browser-toolbar">
+
+        <button onclick="browserBack()">←</button>
+
+        <button onclick="browserForward()">→</button>
+
+        <button onclick="browserReload()">↻</button>
+
+        <input id="browserURL"
+               class="browser-url"
+               type="text"
+               placeholder="https://example.com"
+               value="https://example.com">
+
+        <button onclick="browserGo()">
+            Go
+        </button>
+
+    </div>
+
+    <div class="browser-frame-wrap">
+
+        <div id="browserHome"
+             class="browser-home">
+
+            <div>
+
+                <div style="font-size:55px">
+                    🌐
+                </div>
+
+                <h1>
+                    Kotim Browser
+                </h1>
+
+                <p>
+                    Wbudowana przeglądarka iframe
+                </p>
+
+                <input id="browserHomeInput"
+                       placeholder="https://example.com"
+                       onkeydown="
+                           if(event.key==='Enter')
+                               browserGoHome();
+                       ">
+
+                <div style="
+                    margin-top:12px;
+                    color:#7888a8;
+                    font-size:11px;
+                ">
+                    Niektóre strony blokują iframe.
+                </div>
+
+            </div>
+
+        </div>
+
+        <iframe id="browserFrame"
+                title="Kotim Browser"
+                src="about:blank"
+                allow="fullscreen; autoplay; clipboard-read; clipboard-write">
+        </iframe>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     AI CLUB
+     ====================================================== -->
+
+<section class="window"
+         id="window-aiclub"
+         style="
+            left:10%;
+            top:7%;
+            width:850px;
+            height:600px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            🐱
+        </div>
+
+        <div class="titlebar-title">
+            AI Club
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('aiclub')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('aiclub')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('aiclub')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="ai-layout">
+
+        <div class="ai-top">
+
+            <div class="ai-brand">
+
+                <div class="ai-logo">
+                    🐱
+                </div>
+
+                <div>
+
+                    <h2>
+                        AI Club
+                    </h2>
+
+                    <p>
+                        Offline AI integrated with KotimOS
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div id="aiStatus"
+                 class="ai-status">
+                Inicjalizacja AI Club...
+            </div>
+
+        </div>
+
+        <div class="ai-main">
+
+            <aside class="ai-models"
+                   id="aiModels">
+
+                <div style="
+                    color:#8d9bb8;
+                    font-size:12px;
+                    padding:10px;
+                ">
+                    Ładowanie modeli...
+                </div>
+
+            </aside>
+
+            <main class="ai-chat">
+
+                <div class="ai-chat-header">
+
+                    <div id="aiChatModel">
+                        Nie wybrano modelu
+                    </div>
+
+                    <div id="aiChatProvider">
+                        AI Club
+                    </div>
+
+                </div>
+
+                <div id="aiMessages">
+
+                    <div class="ai-message system">
+                        🐱 Wybierz model AI Club, aby rozpocząć.
+                    </div>
+
+                </div>
+
+                <div class="ai-input">
+
+                    <textarea
+                        id="aiInput"
+                        placeholder="Napisz wiadomość...">
+                    </textarea>
+
+                    <button onclick="sendAIMessage()">
+                        ➤
+                    </button>
+
+                </div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     CATAPPS
+     ====================================================== -->
+
+<section class="window"
+         id="window-catapps"
+         style="
+            left:8%;
+            top:6%;
+            width:850px;
+            height:600px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            🛍️
+        </div>
+
+        <div class="titlebar-title">
+            CatApps
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('catapps')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('catapps')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('catapps')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="catapps">
+
+        <div class="catapps-header">
+
+            <div>
+
+                <h1>
+                    🛍️ CatApps
+                </h1>
+
+                <p>
+                    Centrum aplikacji KotimOS
+                </p>
+
+            </div>
+
+            <button onclick="openCatAppCreator()">
+                ➕ Utwórz aplikację
+            </button>
+
+        </div>
+
+        <div class="catapps-tabs">
+
+            <button
+                class="catapps-tab active"
+                onclick="showCatAppsTab('store')">
+                🏪 Sklep
+            </button>
+
+            <button
+                class="catapps-tab"
+                onclick="showCatAppsTab('installed')">
+                📦 Zainstalowane
+            </button>
+
+            <button
+                class="catapps-tab"
+                onclick="showCatAppsTab('creator')">
+                🛠️ Kreator
+            </button>
+
+        </div>
+
+        <div id="catappsStore"
+             class="catapps-page">
+
+            <div class="catapps-search">
+
+                <input id="catappsSearch"
+                       placeholder="🔎 Szukaj aplikacji..."
+                       oninput="renderCatAppsStore()">
+
+            </div>
+
+            <div id="catappsStoreGrid"
+                 class="catapps-grid">
+            </div>
+
+        </div>
+
+        <div id="catappsInstalled"
+             class="catapps-page"
+             style="display:none;">
+
+            <div id="catappsInstalledGrid"
+                 class="catapps-grid">
+            </div>
+
+        </div>
+
+        <div id="catappsCreator"
+             class="catapps-page"
+             style="display:none;">
+
+            <div class="catapps-editor">
+
+                <input id="catAppName"
+                       placeholder="Nazwa aplikacji">
+
+                <input id="catAppIcon"
+                       placeholder="Ikona"
+                       value="🐱">
+
+                <input id="catAppAuthor"
+                       placeholder="Autor"
+                       value="Local Cat">
+
+                <textarea
+                    id="catAppDescription"
+                    placeholder="Opis aplikacji">
+                </textarea>
+
+                <textarea
+                    id="catAppHTML"
+                    placeholder="HTML aplikacji">
+                </textarea>
+
+                <textarea
+                    id="catAppCSS"
+                    placeholder="CSS aplikacji">
+                </textarea>
+
+                <textarea
+                    id="catAppJS"
+                    placeholder="JavaScript aplikacji">
+                </textarea>
+
+                <div class="catapps-editor-buttons">
+
+                    <button onclick="previewCatApp()">
+                        👁️ Podgląd
+                    </button>
+
+                    <button onclick="createCatApp()">
+                        📦 Utwórz
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     FILES
+     ====================================================== -->
+
+<section class="window"
+         id="window-files"
+         style="
+            left:15%;
+            top:13%;
+            width:650px;
+            height:500px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            📁
+        </div>
+
+        <div class="titlebar-title">
+            Kotim Files
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('files')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('files')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('files')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="file-manager">
+
+        <div class="file-toolbar">
+
+            <button onclick="createVirtualFile()">
+                + Plik
+            </button>
+
+            <button onclick="createVirtualFolder()">
+                + Folder
+            </button>
+
+            <button onclick="refreshFiles()">
+                ↻ Odśwież
+            </button>
+
+        </div>
+
+        <div class="file-path">
+            🏠 /home/cat
+        </div>
+
+        <div id="filesGrid"
+             class="files-grid">
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     NOTEPAD
+     ====================================================== -->
+
+<section class="window"
+         id="window-notepad"
+         style="
+            left:20%;
+            top:10%;
+            width:650px;
+            height:500px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            📝
+        </div>
+
+        <div class="titlebar-title">
+            Kotim Notepad
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('notepad')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('notepad')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('notepad')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="notepad">
+
+        <div class="notepad-toolbar">
+
+            <button onclick="saveNotepad()">
+                💾 Zapisz
+            </button>
+
+            <button onclick="clearNotepad()">
+                🗑 Wyczyść
+            </button>
+
+        </div>
+
+        <textarea id="notepadText"
+                  placeholder="Zacznij pisać...">
+        </textarea>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     CALCULATOR
+     ====================================================== -->
+
+<section class="window"
+         id="window-calculator"
+         style="
+            left:30%;
+            top:12%;
+            width:400px;
+            height:500px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            🧮
+        </div>
+
+        <div class="titlebar-title">
+            Calculator
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('calculator')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('calculator')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('calculator')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="window-content">
+
+        <div class="calculator">
+
+            <input id="calcDisplay"
+                   class="calc-display"
+                   readonly>
+
+            <div class="calc-grid">
+
+                <button onclick="calcClear()">C</button>
+                <button onclick="calcAdd('(')">(</button>
+                <button onclick="calcAdd(')')">)</button>
+                <button onclick="calcAdd('/')">÷</button>
+
+                <button onclick="calcAdd('7')">7</button>
+                <button onclick="calcAdd('8')">8</button>
+                <button onclick="calcAdd('9')">9</button>
+                <button onclick="calcAdd('*')">×</button>
+
+                <button onclick="calcAdd('4')">4</button>
+                <button onclick="calcAdd('5')">5</button>
+                <button onclick="calcAdd('6')">6</button>
+                <button onclick="calcAdd('-')">−</button>
+
+                <button onclick="calcAdd('1')">1</button>
+                <button onclick="calcAdd('2')">2</button>
+                <button onclick="calcAdd('3')">3</button>
+                <button onclick="calcAdd('+')">+</button>
+
+                <button onclick="calcAdd('0')">0</button>
+                <button onclick="calcAdd('.')">.</button>
+                <button onclick="calcBackspace()">⌫</button>
+
+                <button class="equals"
+                        onclick="calcResult()">
+                    =
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     SETTINGS
+     ====================================================== -->
+
+<section class="window"
+         id="window-settings"
+         style="
+            left:25%;
+            top:10%;
+            width:620px;
+            height:500px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            ⚙️
+        </div>
+
+        <div class="titlebar-title">
+            Settings
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('settings')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('settings')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('settings')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="window-content settings">
+
+        <div class="setting-section">
+
+            <h3>
+                🎨 Wygląd
+            </h3>
+
+            <div class="setting-row">
+
+                <label>
+                    Kolor akcentu
+                    <small>
+                        Zmienia kolor KotimOS
+                    </small>
+                </label>
+
+                <input id="accentColor"
+                       type="color"
+                       value="#4da3ff"
+                       onchange="changeAccent(this.value)">
+
+            </div>
+
+        </div>
+
+        <div class="setting-section">
+
+            <h3>
+                🖥️ System
+            </h3>
+
+            <div class="setting-row">
+
+                <label>
+                    System
+                    <small>
+                        KotimOS Web Edition
+                    </small>
+                </label>
+
+                <b>
+                    1.0
+                </b>
+
+            </div>
+
+            <div class="setting-row">
+
+                <label>
+                    Kernel
+                    <small>
+                        KOTIM-WEB
+                    </small>
+                </label>
+
+                <b>
+                    1.0
+                </b>
+
+            </div>
+
+            <div class="setting-row">
+
+                <label>
+                    Storage
+                    <small>
+                        Virtual LocalStorage
+                    </small>
+                </label>
+
+                <b>
+                    ONLINE
+                </b>
+
+            </div>
+
+        </div>
+
+        <div class="setting-section">
+
+            <h3>
+                🛍️ CatApps
+            </h3>
+
+            <div class="setting-row">
+
+                <label>
+                    Zainstalowane aplikacje
+                </label>
+
+                <b id="settingsCatAppCount">
+                    0
+                </b>
+
+            </div>
+
+        </div>
+
+        <div class="setting-section">
+
+            <h3>
+                🤖 AI Club
+            </h3>
+
+            <div class="setting-row">
+
+                <label>
+                    Modele
+                    <small>
+                        Lokalne JSON-y
+                    </small>
+                </label>
+
+                <b id="settingsModelCount">
+                    0
+                </b>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     ABOUT
+     ====================================================== -->
+
+<section class="window"
+         id="window-about"
+         style="
+            left:30%;
+            top:17%;
+            width:500px;
+            height:430px;
+         ">
+
+    <div class="titlebar">
+
+        <div class="titlebar-icon">
+            🐈
+        </div>
+
+        <div class="titlebar-title">
+            About KotimOS
+        </div>
+
+        <div class="window-buttons">
+
+            <button onclick="minimizeApp('about')">
+                −
+            </button>
+
+            <button onclick="maximizeApp('about')">
+                □
+            </button>
+
+            <button class="close"
+                    onclick="closeApp('about')">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="about">
+
+        <div>
+
+            <div class="about-logo">
+                🐱
+            </div>
+
+            <h1>
+                KotimOS
+            </h1>
+
+            <p>
+                Web Operating System
+            </p>
+
+            <p>
+                Version 1.0
+            </p>
+
+            <p>
+                🐾 HTML · CSS · JavaScript
+            </p>
+
+            <p>
+                🤖 AI Club
+            </p>
+
+            <p>
+                🛍️ CatApps
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+</div>
+
+
+<!-- ======================================================
+     TASKBAR
+     ====================================================== -->
+
+<div id="taskbar">
+
+    <button class="start-button"
+            onclick="toggleStartMenu()">
+        🐱
+    </button>
+
+    <div class="task-apps">
+
+        <button class="task-app"
+                title="Browser"
+                onclick="openApp('browser')">
+            🌐
+        </button>
+
+        <button class="task-app"
+                title="AI Club"
+                onclick="openApp('aiclub')">
+            🤖
+        </button>
+
+        <button class="task-app"
+                title="CatApps"
+                onclick="openApp('catapps')">
+            🛍️
+        </button>
+
+        <button class="task-app"
+                title="Files"
+                onclick="openApp('files')">
+            📁
+        </button>
+
+        <button class="task-app"
+                title="Notepad"
+                onclick="openApp('notepad')">
+            📝
+        </button>
+
+        <button class="task-app"
+                title="Calculator"
+                onclick="openApp('calculator')">
+            🧮
+        </button>
+
+    </div>
+
+    <div class="system-tray">
+
+        <span>🌐</span>
+        <span>🔋</span>
+
+        <span id="clock">
+            00:00
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     START MENU
+     ====================================================== -->
+
+<div id="startMenu">
+
+    <div class="start-header">
+
+        <div class="kotim-logo">
+            🐱
+        </div>
+
+        <div>
+
+            <h2>
+                KotimOS
+            </h2>
+
+            <p>
+                Web Operating System 1.0
+            </p>
+
+        </div>
+
+    </div>
+
+    <input id="appSearch"
+           class="start-search"
+           placeholder="🔎 Szukaj aplikacji..."
+           oninput="filterApps(this.value)">
+
+    <div class="apps-grid"
+         id="startApps">
+
+        <button class="start-app"
+                data-name="browser"
+                onclick="openApp('browser')">
+
+            <b>🌐</b>
+            <span>Browser</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="ai club ai"
+                onclick="openApp('aiclub')">
+
+            <b>🤖</b>
+            <span>AI Club</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="catapps sklep aplikacje"
+                onclick="openApp('catapps')">
+
+            <b>🛍️</b>
+            <span>CatApps</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="files pliki"
+                onclick="openApp('files')">
+
+            <b>📁</b>
+            <span>Files</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="notepad notes"
+                onclick="openApp('notepad')">
+
+            <b>📝</b>
+            <span>Notepad</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="calculator kalkulator"
+                onclick="openApp('calculator')">
+
+            <b>🧮</b>
+            <span>Calculator</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="settings ustawienia"
+                onclick="openApp('settings')">
+
+            <b>⚙️</b>
+            <span>Settings</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="about informacje"
+                onclick="openApp('about')">
+
+            <b>🐈</b>
+            <span>About</span>
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+/* =========================================================
+   KOTIMOS CORE
+   ========================================================= */
+
+const APP_NAMES = [
+    "browser",
+    "aiclub",
+    "catapps",
+    "files",
+    "notepad",
+    "calculator",
+    "settings",
+    "about"
+];
+
+let zIndex = 20;
+
+const windows = {};
+
+
+/* =========================================================
+   WINDOW INIT
+   ========================================================= */
+
+APP_NAMES.forEach(name => {
+
+    const element =
+        document.getElementById(
+            "window-" + name
+        );
+
+    if (element) {
+
+        windows[name] = {
+            element,
+            maximized: false
+        };
+
+        element.addEventListener(
+            "mousedown",
+            () => focusWindow(name)
+        );
+
+        element.addEventListener(
+            "touchstart",
+            () => focusWindow(name),
+            { passive:true }
+        );
+
+    }
+
+});
+
+
+/* =========================================================
+   OPEN
+   ========================================================= */
+
+function openApp(name) {
+
+    const app = windows[name];
+
+    if (!app) return;
+
+    app.element.classList.add("active");
+
+    focusWindow(name);
+
+    closeStartMenu();
+
+    if (name === "files") {
+        refreshFiles();
+    }
+
+    if (name === "notepad") {
+        loadNotepad();
+    }
+
+    if (name === "aiclub") {
+        loadAIClub();
+    }
+
+    if (name === "catapps") {
+        renderCatAppsStore();
+        renderInstalledCatApps();
+        updateCatAppCount();
+    }
+
+}
+
+
+/* =========================================================
+   CLOSE
+   ========================================================= */
+
+function closeApp(name) {
+
+    const app = windows[name];
+
+    if (!app) return;
+
+    app.element.classList.remove("active");
+
+    app.element.classList.remove("fullscreen");
+
+    app.maximized = false;
+
+    /*
+     * Browser dostaje about:blank,
+     * ale okno pozostaje zamknięte.
+     */
+
+    if (name === "browser") {
+
+        browserFrame.src =
+            "about:blank";
+
+        browserHome.classList.remove(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MINIMIZE
+   ========================================================= */
+
+function minimizeApp(name) {
+
+    const app = windows[name];
+
+    if (!app) return;
+
+    app.element.classList.remove(
+        "active"
+    );
+
+}
+
+
+/* =========================================================
+   MAXIMIZE
+   ========================================================= */
+
+function maximizeApp(name) {
+
+    const app = windows[name];
+
+    if (!app) return;
+
+    app.maximized =
+        !app.maximized;
+
+    app.element.classList.toggle(
+        "fullscreen",
+        app.maximized
+    );
+
+}
+
+
+/* =========================================================
+   FOCUS
+   ========================================================= */
+
+function focusWindow(name) {
+
+    const app = windows[name];
+
+    if (!app) return;
+
+    zIndex++;
+
+    app.element.style.zIndex =
+        zIndex;
+
+}
+
+
+/* =========================================================
+   START MENU
+   ========================================================= */
+
+function toggleStartMenu() {
+
+    document
+        .getElementById("startMenu")
+        .classList.toggle("open");
+
+}
+
+function closeStartMenu() {
+
+    document
+        .getElementById("startMenu")
+        .classList.remove("open");
+
+}
+
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+function filterApps(query) {
+
+    query =
+        query
+        .toLowerCase()
+        .trim();
+
+    document
+        .querySelectorAll(
+            "#startApps .start-app"
+        )
+        .forEach(button => {
+
+            const name =
+                button.dataset.name
+                .toLowerCase();
+
+            button.style.display =
+                !query ||
+                name.includes(query)
+                    ? ""
+                    : "none";
+
+        });
+
+}
+
+
+/* =========================================================
+   CLOCK
+   ========================================================= */
+
+function updateClock() {
+
+    const now = new Date();
+
+    document
+        .getElementById("clock")
+        .textContent =
+        now.toLocaleTimeString(
+            "pl-PL",
+            {
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+
+}
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+/* =========================================================
+   BROWSER
+   ========================================================= */
+
+const browserFrame =
+    document.getElementById(
+        "browserFrame"
+    );
+
+const browserURL =
+    document.getElementById(
+        "browserURL"
+    );
+
+const browserHome =
+    document.getElementById(
+        "browserHome"
+    );
+
+
+function normalizeURL(value) {
+
+    value =
+        String(value).trim();
+
+    if (!value) {
+        return null;
+    }
+
+    if (
+        !/^https?:\/\//i.test(value)
+    ) {
+
+        if (
+            value.includes(" ") ||
+            !value.includes(".")
+        ) {
+
+            return (
+                "https://www.google.com/search?q=" +
+                encodeURIComponent(value)
+            );
+
+        }
+
+        value =
+            "https://" + value;
+
+    }
+
+    try {
+
+        return new URL(value).href;
+
+    } catch {
+
+        return null;
+
+    }
+
+}
+
+
+function browserGo() {
+
+    const url =
+        normalizeURL(
+            browserURL.value
+        );
+
+    if (!url) {
+
+        alert(
+            "Niepoprawny adres URL."
+        );
+
+        return;
+
+    }
+
+    browserURL.value =
+        url;
+
+    browserFrame.src =
+        url;
+
+    browserHome.classList.add(
+        "hidden"
+    );
+
+    localStorage.setItem(
+        "kotimLastURL",
+        url
+    );
+
+}
+
+
+function browserGoHome() {
+
+    const input =
+        document.getElementById(
+            "browserHomeInput"
+        );
+
+    browserURL.value =
+        input.value;
+
+    browserGo();
+
+}
+
+
+function browserBack() {
+
+    try {
+
+        browserFrame
+            .contentWindow
+            .history
+            .back();
+
+    } catch {
+
+        console.warn(
+            "Historia iframe niedostępna."
+        );
+
+    }
+
+}
+
+
+function browserForward() {
+
+    try {
+
+        browserFrame
+            .contentWindow
+            .history
+            .forward();
+
+    } catch {
+
+        console.warn(
+            "Historia iframe niedostępna."
+        );
+
+    }
+
+}
+
+
+function browserReload() {
+
+    try {
+
+        browserFrame
+            .contentWindow
+            .location
+            .reload();
+
+    } catch {
+
+        browserFrame.src =
+            browserFrame.src;
+
+    }
+
+}
+
+
+browserURL.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+            browserGo();
+        }
+
+    }
+);
+
+
+/* =========================================================
+   VFS
+   ========================================================= */
+
+const DEFAULT_FILES = [
+
+    {
+        name:"Welcome.txt",
+        type:"file",
+        content:"Witaj w KotimOS!\n🐱\n"
+    },
+
+    {
+        name:"AIClub",
+        type:"folder",
+        content:""
+    },
+
+    {
+        name:"CatApps",
+        type:"folder",
+        content:""
+    },
+
+    {
+        name:"Documents",
+        type:"folder",
+        content:""
+    },
+
+    {
+        name:"Pictures",
+        type:"folder",
+        content:""
+    },
+
+    {
+        name:"System",
+        type:"folder",
+        content:""
+    }
+
+];
+
+
+function getFiles() {
+
+    const raw =
+        localStorage.getItem(
+            "kotimVFS"
+        );
+
+    if (!raw) {
+
+        localStorage.setItem(
+            "kotimVFS",
+            JSON.stringify(
+                DEFAULT_FILES
+            )
+        );
+
+        return [
+            ...DEFAULT_FILES
+        ];
+
+    }
+
+    try {
+
+        const files =
+            JSON.parse(raw);
+
+        if (
+            Array.isArray(files)
+        ) {
+            return files;
+        }
+
+    } catch {}
+
+    return [
+        ...DEFAULT_FILES
+    ];
+
+}
+
+
+function saveFiles(files) {
+
+    localStorage.setItem(
+        "kotimVFS",
+        JSON.stringify(files)
+    );
+
+}
+
+
+function refreshFiles() {
+
+    const grid =
+        document.getElementById(
+            "filesGrid"
+        );
+
+    if (!grid) return;
+
+    const files =
+        getFiles();
+
+    grid.innerHTML = "";
+
+    files.forEach(
+        (file,index) => {
+
+            const item =
+                document.createElement(
+                    "button"
+                );
+
+            item.className =
+                "file-item";
+
+            item.innerHTML = `
+
+                <div class="file-icon">
+                    ${file.type === "folder" ? "📁" : "📄"}
+                </div>
+
+                <div class="file-name">
+                    ${escapeHTML(file.name)}
+                </div>
+
+            `;
+
+            item.onclick = () => {
+
+                if (
+                    file.type === "file"
+                ) {
+
+                    openVirtualFile(
+                        file,
+                        index
+                    );
+
+                } else {
+
+                    alert(
+                        `📁 Folder "${file.name}" otwarty.`
+                    );
+
+                }
+
+            };
+
+            grid.appendChild(item);
+
+        }
+    );
+
+}
+
+
+function createVirtualFile() {
+
+    const name =
+        prompt(
+            "Nazwa pliku:"
+        );
+
+    if (!name) return;
+
+    const files =
+        getFiles();
+
+    files.push({
+        name,
+        type:"file",
+        content:""
+    });
+
+    saveFiles(files);
+
+    refreshFiles();
+
+}
+
+
+function createVirtualFolder() {
+
+    const name =
+        prompt(
+            "Nazwa folderu:"
+        );
+
+    if (!name) return;
+
+    const files =
+        getFiles();
+
+    files.push({
+        name,
+        type:"folder",
+        content:""
+    });
+
+    saveFiles(files);
+
+    refreshFiles();
+
+}
+
+
+function openVirtualFile(file,index) {
+
+    const content =
+        prompt(
+            `📄 ${file.name}\n\nEdytuj zawartość:`,
+            file.content || ""
+        );
+
+    if (content === null) {
+        return;
+    }
+
+    const files =
+        getFiles();
+
+    files[index].content =
+        content;
+
+    saveFiles(files);
+
+    refreshFiles();
+
+}
+
+
+/* =========================================================
+   ESCAPE
+   ========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* =========================================================
+   NOTEPAD
+   ========================================================= */
+
+function loadNotepad() {
+
+    document
+        .getElementById("notepadText")
+        .value =
+        localStorage.getItem(
+            "kotimNotepad"
+        ) || "";
+
+}
+
+
+function saveNotepad() {
+
+    const textarea =
+        document.getElementById(
+            "notepadText"
+        );
+
+    localStorage.setItem(
+        "kotimNotepad",
+        textarea.value
+    );
+
+    alert(
+        "💾 Notatka została zapisana."
+    );
+
+}
+
+
+function clearNotepad() {
+
+    if (
+        !confirm(
+            "Wyczyścić notatnik?"
+        )
+    ) return;
+
+    document
+        .getElementById(
+            "notepadText"
+        )
+        .value = "";
+
+}
+
+
+/* =========================================================
+   CALCULATOR
+   ========================================================= */
+
+function calcAdd(value) {
+
+    document
+        .getElementById(
+            "calcDisplay"
+        )
+        .value += value;
+
+}
+
+
+function calcClear() {
+
+    document
+        .getElementById(
+            "calcDisplay"
+        )
+        .value = "";
+
+}
+
+
+function calcBackspace() {
+
+    const display =
+        document.getElementById(
+            "calcDisplay"
+        );
+
+    display.value =
+        display.value.slice(
+            0,
+            -1
+        );
+
+}
+
+
+function calcResult() {
+
+    const display =
+        document.getElementById(
+            "calcDisplay"
+        );
+
+    try {
+
+        const expression =
+            display.value;
+
+        if (
+            !/^[0-9+\-*/().\s]+$/
+            .test(expression)
+        ) {
+            throw new Error();
+        }
+
+        const result =
+            Function(
+                `"use strict";return(${expression})`
+            )();
+
+        display.value =
+            String(result);
+
+    } catch {
+
+        display.value =
+            "ERROR";
+
+    }
+
+}
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+function changeAccent(color) {
+
+    document
+        .documentElement
+        .style
+        .setProperty(
+            "--blue",
+            color
+        );
+
+    localStorage.setItem(
+        "kotimAccent",
+        color
+    );
+
+}
+
+
+function loadSettings() {
+
+    const color =
+        localStorage.getItem(
+            "kotimAccent"
+        );
+
+    if (color) {
+
+        changeAccent(color);
+
+        const input =
+            document.getElementById(
+                "accentColor"
+            );
+
+        if (input) {
+            input.value =
+                color;
+        }
+
+    }
+
+}
+
+loadSettings();
+
+
+/* =========================================================
+   AI CLUB
+   ========================================================= */
+
+const AI_CONFIG_FILE =
+    "config.json";
+
+const AI_COMMUNITY_INDEX =
+    "community/index.json";
+
+const AI_FALLBACK_FILES = [
+
+    "GPT-OSS-20B.json",
+    "Qwen3-8B.json",
+    "Gemma-3-12B.json",
+    "DeepSeek-R1-14B.json",
+    "Ultra Meow 4.json",
+    "Dog-1.0.json"
+
+];
+
+let aiModels = [];
+
+let aiCommunityModels = [];
+
+let selectedAIModel = null;
+
+let aiLoaded = false;
+
+
+async function aiFetchJSON(url) {
+
+    const separator =
+        url.includes("?")
+            ? "&"
+            : "?";
+
+    const response =
+        await fetch(
+            url +
+            separator +
+            "v=" +
+            Date.now(),
+            {
+                cache:"no-store"
+            }
+        );
+
+    if (!response.ok) {
+
+        throw new Error(
+            `HTTP ${response.status}`
+        );
+
+    }
+
+    const text =
+        await response.text();
+
+    try {
+
+        return JSON.parse(text);
+
+    } catch {
+
+        throw new Error(
+            `Niepoprawny JSON: ${url}`
+        );
+
+    }
+
+}
+
+
+async function aiLoadConfig() {
+
+    try {
+
+        return await aiFetchJSON(
+            AI_CONFIG_FILE
+        );
+
+    } catch {
+
+        return null;
+
+    }
+
+}
+
+
+function aiGetFilesFromConfig(config) {
+
+    if (!config) return [];
+
+    const result = [];
+
+    if (
+        Array.isArray(config.models)
+    ) {
+
+        config.models.forEach(item => {
+
+            if (
+                typeof item === "string"
+            ) {
+
+                result.push(item);
+
+            } else if (
+                item &&
+                typeof item === "object"
+            ) {
+
+                const file =
+                    item.file ||
+                    item.json ||
+                    item.path;
+
+                if (
+                    typeof file === "string"
+                ) {
+                    result.push(file);
+                }
+
+            }
+
+        });
+
+    }
+
+    return [
+        ...new Set(result)
+    ];
+
+}
+
+
+function aiModelPath(file) {
+
+    let path =
+        String(file)
+        .trim()
+        .replace(
+            /^\.\/+/,
+            ""
+        );
+
+    if (
+        path.startsWith("models/")
+    ) {
+
+        path =
+            path.slice(7);
+
+    }
+
+    return (
+        "models/" +
+        path
+        .split("/")
+        .map(
+            part =>
+                encodeURIComponent(part)
+        )
+        .join("/")
+    );
+
+}
+
+
+function aiValidateModel(model) {
+
+    if (
+        !model ||
+        typeof model !== "object"
+    ) {
+        throw new Error(
+            "Model nie jest obiektem"
+        );
+    }
+
+    if (
+        !model.id ||
+        !model.name
+    ) {
+        throw new Error(
+            "Model musi mieć id i name"
+        );
+    }
+
+    if (
+        !Array.isArray(model.examples)
+    ) {
+        model.examples = [];
+    }
+
+    model.provider =
+        typeof model.provider === "string"
+            ? model.provider
+            : "AI Club Local";
+
+    model.community = false;
+
+    return model;
+
+}
+
+
+async function aiLoadOfficial() {
+
+    const config =
+        await aiLoadConfig();
+
+    let files =
+        aiGetFilesFromConfig(
+            config
+        );
+
+    if (!files.length) {
+        files =
+            AI_FALLBACK_FILES;
+    }
+
+    const loaded = [];
+
+    for (
+        const file of files
+    ) {
+
+        try {
+
+            const model =
+                await aiFetchJSON(
+                    aiModelPath(file)
+                );
+
+            aiValidateModel(model);
+
+            loaded.push(model);
+
+        } catch(error) {
+
+            console.warn(
+                "[AI Club]",
+                file,
+                error
+            );
+
+        }
+
+    }
+
+    return loaded;
+
+}
+
+
+async function aiLoadCommunity() {
+
+    try {
+
+        const registry =
+            await aiFetchJSON(
+                AI_COMMUNITY_INDEX
+            );
+
+        if (
+            !registry ||
+            !Array.isArray(
+                registry.models
+            )
+        ) {
+            return [];
+        }
+
+        const loaded = [];
+
+        for (
+            const entry of registry.models
+        ) {
+
+            try {
+
+                if (
+                    !entry ||
+                    typeof entry.file !== "string"
+                ) continue;
+
+                const path =
+                    "community/" +
+                    entry.file
+                    .replace(/^\/+/,"")
+                    .split("/")
+                    .map(
+                        part =>
+                            encodeURIComponent(part)
+                    )
+                    .join("/");
+
+                const model =
+                    await aiFetchJSON(path);
+
+                if (
+                    !model ||
+                    !model.id ||
+                    !model.name
+                ) continue;
+
+                if (
+                    !Array.isArray(
+                        model.examples
+                    )
+                ) {
+                    model.examples = [];
+                }
+
+                model.community = true;
+
+                model.author =
+                    model.author ||
+                    entry.author ||
+                    "Community";
+
+                model.version =
+                    model.version ||
+                    entry.version ||
+                    "1.0";
+
+                model.provider =
+                    model.provider ||
+                    "AI Club Community";
+
+                loaded.push(model);
+
+            } catch(error) {
+
+                console.warn(
+                    "[AI Club] Community",
+                    error
+                );
+
+            }
+
+        }
+
+        return loaded;
+
+    } catch {
+
+        return [];
+
+    }
+
+}
+
+
+function renderAIModels() {
+
+    const container =
+        document.getElementById(
+            "aiModels"
+        );
+
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (!aiModels.length) {
+
+        container.innerHTML = `
+            <div style="
+                color:#9ba9c7;
+                padding:10px;
+                font-size:12px;
+            ">
+                Brak modeli.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    aiModels.forEach(model => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "ai-model-card";
+
+        card.innerHTML = `
+
+            <h3>
+                🐱 ${escapeHTML(model.name)}
+            </h3>
+
+            <p>
+                ${escapeHTML(
+                    model.provider ||
+                    "AI Club Local"
+                )}
+            </p>
+
+            <button>
+                Użyj modelu
+            </button>
+
+        `;
+
+        card
+            .querySelector("button")
+            .onclick = () =>
+                aiSelectModel(model);
+
+        container.appendChild(card);
+
+    });
+
+    const count =
+        document.getElementById(
+            "settingsModelCount"
+        );
+
+    if (count) {
+        count.textContent =
+            aiModels.length;
+    }
+
+}
+
+
+function aiSelectModel(model) {
+
+    selectedAIModel =
+        model;
+
+    document
+        .getElementById(
+            "aiChatModel"
+        )
+        .textContent =
+        model.name;
+
+    document
+        .getElementById(
+            "aiChatProvider"
+        )
+        .textContent =
+        `${model.provider || "AI Club Local"} · OFFLINE`;
+
+    const messages =
+        document.getElementById(
+            "aiMessages"
+        );
+
+    messages.innerHTML = "";
+
+    aiAddMessage(
+        "system",
+        `🐱 Rozpoczęto rozmowę z ${model.name}.`
+    );
+
+}
+
+
+async function loadAIClub() {
+
+    if (aiLoaded) return;
+
+    const status =
+        document.getElementById(
+            "aiStatus"
+        );
+
+    status.textContent =
+        "🔄 Ładowanie lokalnych modeli...";
+
+    if (
+        location.protocol === "file:"
+    ) {
+
+        status.textContent =
+            "⚠️ Uruchom przez localhost.";
+
+        renderAIModels();
+
+        return;
+
+    }
+
+    const official =
+        await aiLoadOfficial();
+
+    const community =
+        await aiLoadCommunity();
+
+    aiModels = [
+        ...official,
+        ...community
+    ];
+
+    aiCommunityModels =
+        community;
+
+    renderAIModels();
+
+    aiLoaded = true;
+
+    status.textContent =
+        `🟢 AI Club ONLINE · ${aiModels.length} modeli`;
+
+}
+
+
+function aiNormalize(text) {
+
+    return String(text)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+        .replace(
+            /ł/g,
+            "l"
+        )
+        .replace(
+            /[^\p{L}\p{N}\s]/gu,
+            ""
+        )
+        .replace(
+            /\s+/g,
+            " "
+        )
+        .trim();
+
+}
+
+
+function aiLevenshtein(a,b) {
+
+    const matrix = [];
+
+    for (
+        let i=0;
+        i<=b.length;
+        i++
+    ) {
+        matrix[i] = [i];
+    }
+
+    for (
+        let j=0;
+        j<=a.length;
+        j++
+    ) {
+        matrix[0][j] = j;
+    }
+
+    for (
+        let i=1;
+        i<=b.length;
+        i++
+    ) {
+
+        for (
+            let j=1;
+            j<=a.length;
+            j++
+        ) {
+
+            matrix[i][j] =
+                b[i-1] === a[j-1]
+                    ? matrix[i-1][j-1]
+                    : Math.min(
+                        matrix[i-1][j]+1,
+                        matrix[i][j-1]+1,
+                        matrix[i-1][j-1]+1
+                    );
+
+        }
+
+    }
+
+    return matrix[b.length][a.length];
+
+}
+
+
+function aiSimilarity(a,b) {
+
+    if (a === b) return 1;
+
+    if (!a || !b) return 0;
+
+    if (
+        a.includes(b) ||
+        b.includes(a)
+    ) {
+
+        const smaller =
+            Math.min(
+                a.length,
+                b.length
+            );
+
+        const larger =
+            Math.max(
+                a.length,
+                b.length
+            );
+
+        if (
+            smaller / larger >= .65
+        ) {
+            return .90;
+        }
+
+    }
+
+    const distance =
+        aiLevenshtein(a,b);
+
+    const max =
+        Math.max(
+            a.length,
+            b.length
+        );
+
+    return Math.max(
+        0,
+        1 - distance / max
+    );
+
+}
+
+
+function aiFindAnswer(input,model) {
+
+    if (
+        !model ||
+        !Array.isArray(model.examples)
+    ) return null;
+
+    const normalized =
+        aiNormalize(input);
+
+    let bestAnswer = null;
+    let bestScore = 0;
+
+    for (
+        const example of model.examples
+    ) {
+
+        if (
+            !example ||
+            typeof example !== "object"
+        ) continue;
+
+        let questions = [];
+
+        if (
+            Array.isArray(
+                example.questions
+            )
+        ) {
+
+            questions =
+                example.questions;
+
+        } else if (
+            typeof example.question === "string"
+        ) {
+
+            questions = [
+                example.question
+            ];
+
+        }
+
+        for (
+            const question of questions
+        ) {
+
+            if (
+                typeof question !== "string"
+            ) continue;
+
+            const q =
+                aiNormalize(question);
+
+            if (
+                normalized === q
+            ) {
+
+                return (
+                    example.answer ||
+                    null
+                );
+
+            }
+
+            const score =
+                aiSimilarity(
+                    normalized,
+                    q
+                );
+
+            if (
+                score > bestScore
+            ) {
+
+                bestScore =
+                    score;
+
+                bestAnswer =
+                    example.answer;
+
+            }
+
+        }
+
+    }
+
+    return bestScore >= .72
+        ? bestAnswer
+        : null;
+
+}
+
+
+function aiUnknown(text) {
+
+    const responses = [
+
+        `Nie mam jeszcze odpowiedzi na „${text}”. 🤔`,
+
+        "Tego nie ma jeszcze w lokalnej bazie wiedzy.",
+
+        "Nie znalazłem podobnego pytania.",
+
+        "Hmm... tego jeszcze mnie nie nauczono. 😺"
+
+    ];
+
+    return responses[
+        Math.floor(
+            Math.random() *
+            responses.length
+        )
+    ];
+
+}
+
+
+function aiAddMessage(type,text) {
+
+    const messages =
+        document.getElementById(
+            "aiMessages"
+        );
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+    element.className =
+        `ai-message ${type}`;
+
+    element.textContent =
+        text;
+
+    messages.appendChild(
+        element
+    );
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+
+async function sendAIMessage() {
+
+    if (!selectedAIModel) {
+
+        aiAddMessage(
+            "system",
+            "🐱 Najpierw wybierz model."
+        );
+
+        return;
+
+    }
+
+    const input =
+        document.getElementById(
+            "aiInput"
+        );
+
+    const text =
+        input.value.trim();
+
+    if (!text) return;
+
+    input.value = "";
+
+    aiAddMessage(
+        "user",
+        text
+    );
+
+    const cost =
+        Number(
+            selectedAIModel.points_per_message
+        ) || 1;
+
+    let points =
+        Number(
+            localStorage.getItem(
+                "aiClubPoints"
+            )
+        );
+
+    if (!Number.isFinite(points)) {
+        points = 100;
+    }
+
+    if (points < cost) {
+
+        aiAddMessage(
+            "system",
+            `Brakuje punktów. Koszt: ${cost} ⭐.`
+        );
+
+        return;
+
+    }
+
+    points -= cost;
+
+    localStorage.setItem(
+        "aiClubPoints",
+        String(points)
+    );
+
+    await new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                250
+            )
+    );
+
+    const answer =
+        aiFindAnswer(
+            text,
+            selectedAIModel
+        );
+
+    aiAddMessage(
+        "ai",
+        answer ||
+        aiUnknown(text)
+    );
+
+}
+
+
+document
+    .getElementById(
+        "aiInput"
+    )
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendAIMessage();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   CATAPPS
+   ========================================================= */
+
+const CATAPPS_KEY =
+    "kotimCatApps";
+
+const CATAPPS_REMOTE_INDEX =
+    "apps/index.json";
+
+
+const CATAPPS_STORE = [
+
+    {
+        id:"cat-clock",
+
+        name:"Cat Clock",
+
+        icon:"🕐",
+
+        author:"KotimOS",
+
+        version:"1.0",
+
+        description:
+            "Koci zegarek.",
+
+        html:`
+
+            <div style="
+                height:100%;
+                display:grid;
+                place-items:center;
+                text-align:center;
+                font-family:system-ui;
+            ">
+
+                <div>
+
+                    <div style="font-size:70px">
+                        🐱
+                    </div>
+
+                    <h1 id="catClockTime">
+                        00:00:00
+                    </h1>
+
+                    <p>
+                        Koci zegarek
+                    </p>
+
+                </div>
+
+            </div>
+
+        `,
+
+        css:`
+
+            body {
+                margin:0;
+                color:white;
+                background:#09152b;
+            }
+
+        `,
+
+        js:`
+
+            setInterval(() => {
+
+                const e =
+                    document.getElementById(
+                        "catClockTime"
+                    );
+
+                if(e) {
+
+                    e.textContent =
+                        new Date()
+                        .toLocaleTimeString(
+                            "pl-PL"
+                        );
+
+                }
+
+            },1000);
+
+        `
+
+    },
+
+    {
+        id:"cat-notes",
+
+        name:"Cat Notes",
+
+        icon:"🐱",
+
+        author:"KotimOS",
+
+        version:"1.0",
+
+        description:
+            "Prosty koci notatnik.",
+
+        html:`
+
+            <div style="
+                padding:20px;
+                font-family:system-ui;
+            ">
+
+                <h2>
+                    🐱 Cat Notes
+                </h2>
+
+                <textarea
+                    id="notes"
+                    style="
+                        width:100%;
+                        height:300px;
+                        box-sizing:border-box;
+                        padding:12px;
+                    "
+                    placeholder="Napisz coś...">
+                </textarea>
+
+                <br><br>
+
+                <button id="saveNotes">
+                    💾 Zapisz
+                </button>
+
+            </div>
+
+        `,
+
+        css:`
+
+            body {
+                margin:0;
+                color:white;
+                background:#101b32;
+            }
+
+            button {
+                padding:10px;
+            }
+
+        `,
+
+        js:`
+
+            const n =
+                document.getElementById(
+                    "notes"
+                );
+
+            if(n) {
+
+                n.value =
+                    localStorage.getItem(
+                        "catNotes"
+                    ) || "";
+
+            }
+
+            const save =
+                document.getElementById(
+                    "saveNotes"
+                );
+
+            if(save) {
+
+                save.onclick = () => {
+
+                    localStorage.setItem(
+                        "catNotes",
+                        n.value
+                    );
+
+                };
+
+            }
+
+        `
+
+    }
+
+];
+
+
+function getCatApps() {
+
+    try {
+
+        const data =
+            JSON.parse(
+                localStorage.getItem(
+                    CATAPPS_KEY
+                ) || "[]"
+            );
+
+        return Array.isArray(data)
+            ? data
+            : [];
+
+    } catch {
+
+        return [];
+
+    }
+
+}
+
+
+function saveCatApps(apps) {
+
+    localStorage.setItem(
+        CATAPPS_KEY,
+        JSON.stringify(apps)
+    );
+
+    updateCatAppCount();
+
+}
+
+
+function updateCatAppCount() {
+
+    const count =
+        document.getElementById(
+            "settingsCatAppCount"
+        );
+
+    if (count) {
+
+        count.textContent =
+            getCatApps().length;
+
+    }
+
+}
+
+
+/* =========================================================
+   REMOTE CATAPPS
+   ========================================================= */
+
+async function loadRemoteCatApps() {
+
+    try {
+
+        const response =
+            await fetch(
+                CATAPPS_REMOTE_INDEX +
+                "?v=" +
+                Date.now(),
+                {
+                    cache:"no-store"
+                }
+            );
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data =
+            await response.json();
+
+        if (
+            !data ||
+            !Array.isArray(data.apps)
+        ) {
+            return [];
+        }
+
+        const loaded = [];
+
+        for (
+            const entry of data.apps
+        ) {
+
+            try {
+
+                let app;
+
+                if (
+                    typeof entry === "string"
+                ) {
+
+                    const response2 =
+                        await fetch(
+                            "apps/" +
+                            entry
+                        );
+
+                    if (!response2.ok) {
+                        continue;
+                    }
+
+                    app =
+                        await response2.json();
+
+                } else {
+
+                    app = entry;
+
+                }
+
+                if (
+                    !app.id ||
+                    !app.name
+                ) continue;
+
+                loaded.push(app);
+
+            } catch(error) {
+
+                console.warn(
+                    "CatApps remote error:",
+                    error
+                );
+
+            }
+
+        }
+
+        return loaded;
+
+    } catch {
+
+        return [];
+
+    }
+
+}
+
+
+async function refreshRemoteCatApps() {
+
+    const remote =
+        await loadRemoteCatApps();
+
+    remote.forEach(app => {
+
+        const index =
+            CATAPPS_STORE.findIndex(
+                x => x.id === app.id
+            );
+
+        if (index >= 0) {
+
+            CATAPPS_STORE[index] =
+                app;
+
+        } else {
+
+            CATAPPS_STORE.push(app);
+
+        }
+
+    });
+
+    renderCatAppsStore();
+
+}
+
+
+/* =========================================================
+   STORE
+   ========================================================= */
+
+function renderCatAppsStore() {
+
+    const grid =
+        document.getElementById(
+            "catappsStoreGrid"
+        );
+
+    if (!grid) return;
+
+    const search =
+        (
+            document.getElementById(
+                "catappsSearch"
+            )?.value || ""
+        )
+        .toLowerCase()
+        .trim();
+
+    const apps =
+        CATAPPS_STORE.filter(app => {
+
+            const text =
+                (
+                    app.name +
+                    " " +
+                    app.description +
+                    " " +
+                    app.author
+                ).toLowerCase();
+
+            return text.includes(search);
+
+        });
+
+    grid.innerHTML = "";
+
+    if (!apps.length) {
+
+        grid.innerHTML = `
+            <div class="catapps-empty">
+                🔎 Nie znaleziono aplikacji.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    apps.forEach(app => {
+
+        const installed =
+            getCatApps()
+            .some(
+                x => x.id === app.id
+            );
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "catapp-card";
+
+        card.innerHTML = `
+
+            <div class="catapp-icon">
+                ${escapeHTML(
+                    app.icon || "🐱"
+                )}
+            </div>
+
+            <h3>
+                ${escapeHTML(app.name)}
+            </h3>
+
+            <p>
+                ${escapeHTML(
+                    app.description ||
+                    "Aplikacja KotimOS"
+                )}
+            </p>
+
+            <div class="catapp-meta">
+
+                ${escapeHTML(
+                    app.author ||
+                    "Unknown"
+                )}
+
+                · v${escapeHTML(
+                    app.version ||
+                    "1.0"
+                )}
+
+            </div>
+
+            <div class="catapp-actions">
+
+                ${
+                    installed
+
+                    ? `
+                        <button
+                            class="primary"
+                            onclick="
+                                launchCatApp(
+                                    '${escapeHTML(app.id)}'
+                                )
+                            ">
+                            ▶️ Uruchom
+                        </button>
+                    `
+
+                    : `
+                        <button
+                            class="primary"
+                            onclick="
+                                installCatApp(
+                                    '${escapeHTML(app.id)}'
+                                )
+                            ">
+                            📥 Zainstaluj
+                        </button>
+                    `
+                }
+
+            </div>
+
+        `;
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+function installCatApp(id) {
+
+    const app =
+        CATAPPS_STORE.find(
+            x => x.id === id
+        );
+
+    if (!app) return;
+
+    const installed =
+        getCatApps();
+
+    if (
+        installed.some(
+            x => x.id === id
+        )
+    ) {
+        return;
+    }
+
+    installed.push({
+        ...app,
+        installedAt:Date.now()
+    });
+
+    saveCatApps(
+        installed
+    );
+
+    renderCatAppsStore();
+
+    renderInstalledCatApps();
+
+    alert(
+        `📦 ${app.name} został zainstalowany!`
+    );
+
+}
+
+
+function renderInstalledCatApps() {
+
+    const grid =
+        document.getElementById(
+            "catappsInstalledGrid"
+        );
+
+    if (!grid) return;
+
+    const apps =
+        getCatApps();
+
+    grid.innerHTML = "";
+
+    if (!apps.length) {
+
+        grid.innerHTML = `
+            <div class="catapps-empty">
+                📦 Brak zainstalowanych aplikacji.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    apps.forEach(app => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "catapp-card";
+
+        card.innerHTML = `
+
+            <div class="catapp-icon">
+                ${escapeHTML(
+                    app.icon || "🐱"
+                )}
+            </div>
+
+            <h3>
+                ${escapeHTML(app.name)}
+            </h3>
+
+            <p>
+                ${escapeHTML(
+                    app.description || ""
+                )}
+            </p>
+
+            <div class="catapp-meta">
+
+                ${escapeHTML(
+                    app.author || "Local Cat"
+                )}
+
+                · v${escapeHTML(
+                    app.version || "1.0"
+                )}
+
+            </div>
+
+            <div class="catapp-actions">
+
+                <button
+                    class="primary"
+                    onclick="
+                        launchCatApp(
+                            '${escapeHTML(app.id)}'
+                        )
+                    ">
+                    ▶️ Uruchom
+                </button>
+
+                <button
+                    class="danger"
+                    onclick="
+                        uninstallCatApp(
+                            '${escapeHTML(app.id)}'
+                        )
+                    ">
+                    🗑️
+                </button>
+
+            </div>
+
+        `;
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+function uninstallCatApp(id) {
+
+    const apps =
+        getCatApps();
+
+    const app =
+        apps.find(
+            x => x.id === id
+        );
+
+    if (!app) return;
+
+    if (
+        !confirm(
+            `Odinstalować ${app.name}?`
+        )
+    ) {
+        return;
+    }
+
+    saveCatApps(
+        apps.filter(
+            x => x.id !== id
+        )
+    );
+
+    renderCatAppsStore();
+
+    renderInstalledCatApps();
+
+}
+
+
+/* =========================================================
+   RUN CATAPP
+   ========================================================= */
+
+function launchCatApp(id) {
+
+    const app =
+        getCatApps()
+        .find(
+            x => x.id === id
+        ) ||
+        CATAPPS_STORE.find(
+            x => x.id === id
+        );
+
+    if (!app) return;
+
+    const old =
+        document.getElementById(
+            "catapp-runtime"
+        );
+
+    if (old) {
+        old.remove();
+    }
+
+    const window =
+        document.createElement(
+            "section"
+        );
+
+    window.id =
+        "catapp-runtime";
+
+    window.className =
+        "window active";
+
+    window.style.cssText = `
+        left:10%;
+        top:8%;
+        width:720px;
+        height:520px;
+        z-index:${++zIndex};
+    `;
+
+    window.innerHTML = `
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                ${escapeHTML(
+                    app.icon || "🐱"
+                )}
+            </div>
+
+            <div class="titlebar-title">
+                ${escapeHTML(app.name)}
+            </div>
+
+            <div class="window-buttons">
+
+                <button
+                    class="close">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            id="catapp-runtime-content"
+            style="
+                flex:1;
+                min-height:0;
+                overflow:auto;
+                background:#0b1428;
+            ">
+        </div>
+
+    `;
+
+    document
+        .getElementById("desktop")
+        .appendChild(window);
+
+    window
+        .querySelector(".close")
+        .onclick = () => {
+
+            window.remove();
+
+        };
+
+    window.addEventListener(
+        "mousedown",
+        () => {
+
+            zIndex++;
+
+            window.style.zIndex =
+                zIndex;
+
+        }
+    );
+
+    const content =
+        window.querySelector(
+            "#catapp-runtime-content"
+        );
+
+    const shadow =
+        content.attachShadow({
+            mode:"open"
+        });
+
+    shadow.innerHTML = `
+
+        <style>
+
+            :host {
+                display:block;
+                min-height:100%;
+            }
+
+            ${app.css || ""}
+
+        </style>
+
+        ${app.html || ""}
+
+    `;
+
+    if (app.js) {
+
+        try {
+
+            const script =
+                document.createElement(
+                    "script"
+                );
+
+            script.textContent =
+                app.js;
+
+            shadow.appendChild(
+                script
+            );
+
+        } catch(error) {
+
+            console.error(
+                "CatApp JS:",
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   CATAPP TABS
+   ========================================================= */
+
+function showCatAppsTab(tab) {
+
+    document
+        .querySelectorAll(
+            ".catapps-page"
+        )
+        .forEach(page => {
+
+            page.style.display =
+                "none";
+
+        });
+
+    document
+        .querySelectorAll(
+            ".catapps-tab"
+        )
+        .forEach(button => {
+
+            button.classList.remove(
+                "active"
+            );
+
+        });
+
+    if (tab === "store") {
+
+        document
+            .getElementById(
+                "catappsStore"
+            )
+            .style.display = "";
+
+        document
+            .querySelector(
+                ".catapps-tab:nth-child(1)"
+            )
+            .classList.add("active");
+
+        renderCatAppsStore();
+
+    }
+
+    if (tab === "installed") {
+
+        document
+            .getElementById(
+                "catappsInstalled"
+            )
+            .style.display = "";
+
+        document
+            .querySelector(
+                ".catapps-tab:nth-child(2)"
+            )
+            .classList.add("active");
+
+        renderInstalledCatApps();
+
+    }
+
+    if (tab === "creator") {
+
+        document
+            .getElementById(
+                "catappsCreator"
+            )
+            .style.display = "";
+
+        document
+            .querySelector(
+                ".catapps-tab:nth-child(3)"
+            )
+            .classList.add("active");
+
+    }
+
+}
+
+
+/* =========================================================
+   CREATOR
+   ========================================================= */
+
+function openCatAppCreator() {
+
+    showCatAppsTab(
+        "creator"
+    );
+
+}
+
+
+function createCatApp() {
+
+    const name =
+        document
+        .getElementById(
+            "catAppName"
+        )
+        .value
+        .trim();
+
+    if (!name) {
+
+        alert(
+            "Podaj nazwę aplikacji."
+        );
+
+        return;
+
+    }
+
+    const app = {
+
+        id:
+            "local-" +
+            Date.now(),
+
+        name:name,
+
+        icon:
+            document
+            .getElementById(
+                "catAppIcon"
+            )
+            .value
+            .trim() ||
+            "🐱",
+
+        author:
+            document
+            .getElementById(
+                "catAppAuthor"
+            )
+            .value
+            .trim() ||
+            "Local Cat",
+
+        version:"1.0",
+
+        description:
+            document
+            .getElementById(
+                "catAppDescription"
+            )
+            .value
+            .trim() ||
+            "Własna aplikacja KotimOS.",
+
+        html:
+            document
+            .getElementById(
+                "catAppHTML"
+            )
+            .value,
+
+        css:
+            document
+            .getElementById(
+                "catAppCSS"
+            )
+            .value,
+
+        js:
+            document
+            .getElementById(
+                "catAppJS"
+            )
+            .value,
+
+        local:true,
+
+        installedAt:
+            Date.now()
+
+    };
+
+    const apps =
+        getCatApps();
+
+    apps.push(app);
+
+    saveCatApps(apps);
+
+    renderInstalledCatApps();
+
+    alert(
+        `🎉 ${name} została utworzona i zainstalowana!`
+    );
+
+    showCatAppsTab(
+        "installed"
+    );
+
+}
+
+
+function previewCatApp() {
+
+    const app = {
+
+        id:"preview",
+
+        name:
+            document
+            .getElementById(
+                "catAppName"
+            )
+            .value ||
+            "Podgląd",
+
+        icon:
+            document
+            .getElementById(
+                "catAppIcon"
+            )
+            .value ||
+            "🐱",
+
+        html:
+            document
+            .getElementById(
+                "catAppHTML"
+            )
+            .value,
+
+        css:
+            document
+            .getElementById(
+                "catAppCSS"
+            )
+            .value,
+
+        js:
+            document
+            .getElementById(
+                "catAppJS"
+            )
+            .value
+
+    };
+
+    launchTemporaryCatApp(
+        app
+    );
+
+}
+
+
+function launchTemporaryCatApp(app) {
+
+    const window =
+        document.createElement(
+            "section"
+        );
+
+    window.className =
+        "window active";
+
+    window.style.cssText = `
+        left:15%;
+        top:10%;
+        width:650px;
+        height:480px;
+        z-index:${++zIndex};
+    `;
+
+    window.innerHTML = `
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                ${escapeHTML(
+                    app.icon || "🐱"
+                )}
+            </div>
+
+            <div class="titlebar-title">
+                ${escapeHTML(
+                    app.name
+                )}
+            </div>
+
+            <div class="window-buttons">
+
+                <button class="close">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div
+            class="preview-content"
+            style="
+                flex:1;
+                overflow:auto;
+            ">
+        </div>
+
+    `;
+
+    document
+        .getElementById(
+            "desktop"
+        )
+        .appendChild(
+            window
+        );
+
+    window
+        .querySelector(".close")
+        .onclick = () =>
+            window.remove();
+
+    const content =
+        window.querySelector(
+            ".preview-content"
+        );
+
+    content.innerHTML =
+        app.html || "";
+
+    const style =
+        document.createElement(
+            "style"
+        );
+
+    style.textContent =
+        app.css || "";
+
+    content.appendChild(
+        style
+    );
+
+    if (app.js) {
+
+        const script =
+            document.createElement(
+                "script"
+            );
+
+        script.textContent =
+            app.js;
+
+        content.appendChild(
+            script
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   KEYBOARD
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeStartMenu();
+
+            APP_NAMES.forEach(
+                name => {
+
+                    const app =
+                        windows[name];
+
+                    if (
+                        app &&
+                        app.element.classList.contains(
+                            "fullscreen"
+                        )
+                    ) {
+
+                        app.element.classList.remove(
+                            "fullscreen"
+                        );
+
+                        app.maximized =
+                            false;
+
+                    }
+
+                }
+            );
+
+        }
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() === "l"
+        ) {
+
+            const browser =
+                windows.browser;
+
+            if (
+                browser &&
+                browser.element.classList.contains(
+                    "active"
+                )
+            ) {
+
+                event.preventDefault();
+
+                browserURL.focus();
+
+                browserURL.select();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   START MENU OUTSIDE CLICK
+   ========================================================= */
+
+document
+    .getElementById("desktop")
+    .addEventListener(
+        "mousedown",
+        event => {
+
+            if (
+                event.target.closest(
+                    ".window"
+                )
+            ) {
+                return;
+            }
+
+            closeStartMenu();
+
+        }
+    );
+
+
+/* =========================================================
+   RESTORE BROWSER
+   ========================================================= */
+
+const lastURL =
+    localStorage.getItem(
+        "kotimLastURL"
+    );
+
+if (lastURL) {
+
+    browserURL.value =
+        lastURL;
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+refreshFiles();
+
+renderCatAppsStore();
+
+renderInstalledCatApps();
+
+updateCatAppCount();
+
+setTimeout(
+    () => {
+
+        openApp("about");
+
+    },
+    300
+);
+
+
+/* =========================================================
+   REMOTE CATAPPS UPDATE
+   ========================================================= */
+
+if (
+    location.protocol !== "file:"
+) {
+
+    refreshRemoteCatApps();
+
+}
+
+</script>
+
+</body>
+</html>
