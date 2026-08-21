@@ -1,0 +1,4071 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<title>KotimOS</title>
+
+<style>
+
+/* =========================================================
+   KOTIMOS
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --bg: #07101f;
+    --bg2: #0d1830;
+    --panel: rgba(17, 29, 55, .78);
+    --panel2: rgba(24, 39, 72, .82);
+    --border: rgba(255,255,255,.11);
+    --text: #f5f7ff;
+    --muted: #9ba9c7;
+    --blue: #4da3ff;
+    --violet: #8b5cf6;
+    --cyan: #39d9ff;
+    --danger: #ff5577;
+    --success: #4ade80;
+    --shadow: 0 25px 70px rgba(0,0,0,.45);
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 15% 15%, #173d72 0, transparent 32%),
+        radial-gradient(circle at 85% 20%, #35216b 0, transparent 30%),
+        radial-gradient(circle at 50% 100%, #071c39 0, transparent 40%),
+        var(--bg);
+    color: var(--text);
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* =========================================================
+   DESKTOP
+   ========================================================= */
+
+#desktop {
+    position: fixed;
+    inset: 0 0 72px 0;
+    overflow: hidden;
+}
+
+/* =========================================================
+   WALLPAPER
+   ========================================================= */
+
+.wallpaper {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.wallpaper::before,
+.wallpaper::after {
+    content: "";
+    position: absolute;
+    width: 45vw;
+    height: 45vw;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: .28;
+}
+
+.wallpaper::before {
+    background: #247cff;
+    top: -20%;
+    left: -10%;
+}
+
+.wallpaper::after {
+    background: #9d42ff;
+    right: -10%;
+    bottom: -20%;
+}
+
+/* =========================================================
+   DESKTOP ICONS
+   ========================================================= */
+
+.desktop-icons {
+    position: relative;
+    z-index: 2;
+    padding: 22px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 92px);
+    gap: 18px;
+    width: min(100%, 500px);
+}
+
+.desktop-icon {
+    width: 82px;
+    min-height: 92px;
+    padding: 8px 4px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: transparent;
+    color: white;
+    text-align: center;
+}
+
+.desktop-icon:hover {
+    background: rgba(255,255,255,.08);
+    border-color: rgba(255,255,255,.08);
+}
+
+.desktop-icon:active {
+    transform: scale(.96);
+}
+
+.desktop-icon .icon {
+    width: 54px;
+    height: 54px;
+    margin: auto;
+    border-radius: 15px;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+    background:
+        linear-gradient(135deg,
+            rgba(77,163,255,.95),
+            rgba(139,92,246,.95));
+    box-shadow:
+        0 12px 30px rgba(46,105,255,.3);
+}
+
+.desktop-icon span {
+    display: block;
+    margin-top: 7px;
+    font-size: 12px;
+    text-shadow: 0 2px 8px #000;
+}
+
+/* =========================================================
+   WINDOWS
+   ========================================================= */
+
+.window {
+    position: absolute;
+    z-index: 10;
+    min-width: 300px;
+    min-height: 220px;
+    width: 720px;
+    height: 520px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 96px);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: rgba(8, 16, 32, .82);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: none;
+}
+
+.window.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.window.fullscreen {
+    inset: 10px 10px 10px 10px !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none;
+    max-height: none;
+}
+
+.titlebar {
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    background: rgba(255,255,255,.055);
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+}
+
+.titlebar-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background:
+        linear-gradient(135deg,
+            var(--blue),
+            var(--violet));
+}
+
+.titlebar-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.window-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.window-buttons button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 0;
+    border-radius: 9px;
+    color: white;
+    background: rgba(255,255,255,.07);
+}
+
+.window-buttons button:hover {
+    background: rgba(255,255,255,.14);
+}
+
+.window-buttons .close:hover {
+    background: var(--danger);
+}
+
+.window-content {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+}
+
+/* =========================================================
+   TASKBAR
+   ========================================================= */
+
+#taskbar {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 72px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(6,12,26,.84);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-top: 1px solid var(--border);
+}
+
+.start-button {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    color: white;
+    background:
+        linear-gradient(135deg,
+            #2388ff,
+            #8149ff);
+    font-size: 25px;
+    box-shadow: 0 10px 30px rgba(58,110,255,.3);
+}
+
+.task-apps {
+    display: flex;
+    gap: 7px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.task-app {
+    min-width: 46px;
+    width: 46px;
+    height: 46px;
+    border: 1px solid transparent;
+    border-radius: 13px;
+    background: rgba(255,255,255,.055);
+    color: white;
+    font-size: 20px;
+}
+
+.task-app:hover {
+    background: rgba(255,255,255,.11);
+}
+
+.system-tray {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    color: var(--muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+#clock {
+    color: white;
+    font-weight: 700;
+}
+
+/* =========================================================
+   START MENU
+   ========================================================= */
+
+#startMenu {
+    position: fixed;
+    z-index: 1100;
+    left: 12px;
+    bottom: 82px;
+    width: min(430px, calc(100vw - 24px));
+    max-height: min(650px, calc(100vh - 100px));
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    background: rgba(8,16,34,.91);
+    backdrop-filter: blur(30px);
+    box-shadow: var(--shadow);
+    display: none;
+    overflow: auto;
+}
+
+#startMenu.open {
+    display: block;
+}
+
+.start-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.kotim-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    font-size: 27px;
+    background:
+        linear-gradient(135deg,
+            #35a7ff,
+            #934cff);
+}
+
+.start-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.start-header p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.start-search {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    outline: none;
+    color: white;
+    background: rgba(255,255,255,.06);
+    margin-bottom: 15px;
+}
+
+.start-search:focus {
+    border-color: var(--blue);
+}
+
+.apps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.start-app {
+    min-height: 82px;
+    border: 1px solid transparent;
+    border-radius: 15px;
+    color: white;
+    background: rgba(255,255,255,.045);
+}
+
+.start-app:hover {
+    background: rgba(255,255,255,.09);
+    border-color: var(--border);
+}
+
+.start-app b {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 5px;
+}
+
+.start-app span {
+    font-size: 11px;
+}
+
+/* =========================================================
+   BROWSER
+   ========================================================= */
+
+.browser {
+    display: flex;
+    flex-direction: column;
+}
+
+.browser-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,.15);
+}
+
+.browser-toolbar button {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 9px;
+    color: white;
+    background: rgba(255,255,255,.07);
+}
+
+.browser-toolbar button:hover {
+    background: rgba(255,255,255,.14);
+}
+
+.browser-url {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 13px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    color: white;
+    background: rgba(255,255,255,.06);
+}
+
+.browser-url:focus {
+    border-color: var(--blue);
+}
+
+.browser-frame-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: white;
+}
+
+#browserFrame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+.browser-home {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+    color: white;
+    background:
+        radial-gradient(circle at 20% 20%, #1d4c87, transparent 40%),
+        radial-gradient(circle at 80% 80%, #45236f, transparent 40%),
+        #091327;
+}
+
+.browser-home.hidden {
+    display: none;
+}
+
+.browser-home h1 {
+    font-size: clamp(30px, 7vw, 55px);
+    margin: 0;
+}
+
+.browser-home p {
+    color: var(--muted);
+}
+
+.browser-home input {
+    width: min(500px, 100%);
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,.08);
+    color: white;
+    outline: none;
+}
+
+/* =========================================================
+   AI CLUB
+   ========================================================= */
+
+.ai-layout {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-top {
+    padding: 18px;
+    border-bottom: 1px solid var(--border);
+    background:
+        linear-gradient(120deg,
+            rgba(38,130,255,.16),
+            rgba(139,92,246,.12));
+}
+
+.ai-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ai-logo {
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    border-radius: 15px;
+    font-size: 27px;
+    background:
+        linear-gradient(135deg,
+            #3da8ff,
+            #8b5cf6);
+}
+
+.ai-brand h2 {
+    margin: 0;
+}
+
+.ai-brand p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.ai-status {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.ai-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+.ai-models {
+    width: 260px;
+    flex-shrink: 0;
+    padding: 12px;
+    overflow: auto;
+    border-right: 1px solid var(--border);
+}
+
+.ai-model-card {
+    padding: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+}
+
+.ai-model-card:hover {
+    background: rgba(255,255,255,.07);
+}
+
+.ai-model-card h3 {
+    margin: 0 0 5px;
+    font-size: 13px;
+}
+
+.ai-model-card p {
+    margin: 0 0 9px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.ai-model-card button {
+    width: 100%;
+    border: 0;
+    padding: 8px;
+    border-radius: 9px;
+    color: white;
+    background:
+        linear-gradient(90deg,
+            #278fff,
+            #7549ef);
+}
+
+.ai-chat {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-chat-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+#aiChatModel {
+    font-weight: 700;
+}
+
+#aiChatProvider {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+#aiMessages {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 15px;
+}
+
+.ai-message {
+    max-width: 85%;
+    padding: 11px 13px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ai-message.system {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 95%;
+    text-align: center;
+    color: var(--muted);
+    background: transparent;
+    font-size: 12px;
+}
+
+.ai-message.user {
+    margin-left: auto;
+    background:
+        linear-gradient(135deg,
+            #227fe8,
+            #6744db);
+}
+
+.ai-message.ai {
+    background: rgba(255,255,255,.075);
+    border: 1px solid var(--border);
+}
+
+.ai-input {
+    display: flex;
+    gap: 7px;
+    padding: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.ai-input textarea {
+    min-width: 0;
+    flex: 1;
+    height: 43px;
+    resize: none;
+    outline: none;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 11px;
+    color: white;
+    background: rgba(255,255,255,.055);
+}
+
+.ai-input button {
+    width: 48px;
+    border: 0;
+    border-radius: 11px;
+    color: white;
+    background:
+        linear-gradient(135deg,
+            #2b91ff,
+            #7549ef);
+}
+
+/* =========================================================
+   FILE MANAGER
+   ========================================================= */
+
+.file-manager {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-toolbar {
+    display: flex;
+    gap: 7px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.file-toolbar button {
+    border: 0;
+    padding: 8px 11px;
+    border-radius: 9px;
+    color: white;
+    background: rgba(255,255,255,.07);
+}
+
+.file-path {
+    padding: 10px 14px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.files-grid {
+    padding: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    overflow: auto;
+}
+
+.file-item {
+    padding: 15px 8px;
+    text-align: center;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: rgba(255,255,255,.04);
+    color: white;
+}
+
+.file-item:hover {
+    border-color: var(--border);
+    background: rgba(255,255,255,.08);
+}
+
+.file-icon {
+    font-size: 35px;
+    margin-bottom: 7px;
+}
+
+.file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+/* =========================================================
+   NOTEPAD
+   ========================================================= */
+
+.notepad {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.notepad-toolbar {
+    display: flex;
+    gap: 7px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.notepad-toolbar button {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 9px;
+    color: white;
+    background: rgba(255,255,255,.07);
+}
+
+#notepadText {
+    flex: 1;
+    min-height: 0;
+    resize: none;
+    border: 0;
+    outline: none;
+    padding: 18px;
+    color: white;
+    background: rgba(0,0,0,.18);
+    font-family: monospace;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   CALCULATOR
+   ========================================================= */
+
+.calculator {
+    max-width: 400px;
+    margin: auto;
+    padding: 20px;
+}
+
+.calc-display {
+    width: 100%;
+    height: 70px;
+    margin-bottom: 10px;
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    color: white;
+    background: rgba(255,255,255,.06);
+    text-align: right;
+    font-size: 25px;
+}
+
+.calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.calc-grid button {
+    height: 58px;
+    border: 0;
+    border-radius: 13px;
+    color: white;
+    background: rgba(255,255,255,.07);
+    font-size: 17px;
+}
+
+.calc-grid button:hover {
+    background: rgba(255,255,255,.13);
+}
+
+.calc-grid .equals {
+    background:
+        linear-gradient(135deg,
+            #278fff,
+            #7549ef);
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.settings {
+    padding: 20px;
+}
+
+.setting-section {
+    margin-bottom: 25px;
+}
+
+.setting-section h3 {
+    margin-top: 0;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.setting-row label {
+    flex: 1;
+}
+
+.setting-row small {
+    display: block;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.setting-row input[type="color"] {
+    width: 50px;
+    height: 34px;
+    border: 0;
+    background: transparent;
+}
+
+/* =========================================================
+   ABOUT
+   ========================================================= */
+
+.about {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 30px;
+    text-align: center;
+}
+
+.about-logo {
+    width: 100px;
+    height: 100px;
+    display: grid;
+    place-items: center;
+    margin: auto;
+    border-radius: 30px;
+    font-size: 52px;
+    background:
+        linear-gradient(135deg,
+            #238eff,
+            #914cff);
+    box-shadow: 0 25px 70px rgba(64,111,255,.35);
+}
+
+.about h1 {
+    font-size: 34px;
+    margin-bottom: 4px;
+}
+
+.about p {
+    color: var(--muted);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    #desktop {
+        inset-bottom: 64px;
+    }
+
+    #taskbar {
+        height: 64px;
+        padding: 6px 8px;
+    }
+
+    .start-button {
+        width: 48px;
+        height: 48px;
+    }
+
+    .task-app {
+        width: 43px;
+        min-width: 43px;
+        height: 43px;
+    }
+
+    .system-tray {
+        font-size: 11px;
+        padding: 0 2px;
+    }
+
+    .window {
+        left: 6px !important;
+        top: 6px !important;
+        width: calc(100vw - 12px) !important;
+        height: calc(100vh - 78px) !important;
+        max-width: none;
+        max-height: none;
+        border-radius: 16px;
+    }
+
+    .desktop-icons {
+        grid-template-columns: repeat(4, 76px);
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .desktop-icon {
+        width: 72px;
+    }
+
+    .desktop-icon .icon {
+        width: 47px;
+        height: 47px;
+        font-size: 23px;
+    }
+
+    .desktop-icon span {
+        font-size: 10px;
+    }
+
+    .ai-main {
+        flex-direction: column;
+    }
+
+    .ai-models {
+        width: 100%;
+        height: 130px;
+        flex-shrink: 0;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .ai-model-card {
+        width: 190px;
+        min-width: 190px;
+        margin: 0;
+    }
+
+    .ai-model-card p {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .apps-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- ========================================================
+     DESKTOP
+     ========================================================= -->
+
+<div id="desktop">
+
+    <div class="wallpaper"></div>
+
+    <div class="desktop-icons">
+
+        <button class="desktop-icon"
+                onclick="openApp('browser')">
+            <div class="icon">🌐</div>
+            <span>Browser</span>
+        </button>
+
+        <button class="desktop-icon"
+                onclick="openApp('aiclub')">
+            <div class="icon">🐱</div>
+            <span>AI Club</span>
+        </button>
+
+        <button class="desktop-icon"
+                onclick="openApp('files')">
+            <div class="icon">📁</div>
+            <span>Files</span>
+        </button>
+
+        <button class="desktop-icon"
+                onclick="openApp('notepad')">
+            <div class="icon">📝</div>
+            <span>Notepad</span>
+        </button>
+
+        <button class="desktop-icon"
+                onclick="openApp('calculator')">
+            <div class="icon">🧮</div>
+            <span>Calculator</span>
+        </button>
+
+        <button class="desktop-icon"
+                onclick="openApp('settings')">
+            <div class="icon">⚙️</div>
+            <span>Settings</span>
+        </button>
+
+        <button class="desktop-icon"
+                onclick="openApp('about')">
+            <div class="icon">🐈</div>
+            <span>About</span>
+        </button>
+
+    </div>
+
+
+    <!-- ====================================================
+         BROWSER WINDOW
+         ==================================================== -->
+
+    <section class="window browser"
+             id="window-browser"
+             style="left: 8%; top: 8%;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">🌐</div>
+
+            <div class="titlebar-title">
+                Kotim Browser
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('browser')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('browser')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('browser')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="browser-toolbar">
+
+            <button onclick="browserBack()">←</button>
+
+            <button onclick="browserForward()">→</button>
+
+            <button onclick="browserReload()">↻</button>
+
+            <input id="browserURL"
+                   class="browser-url"
+                   type="text"
+                   placeholder="Wpisz adres strony, np. https://example.com"
+                   value="https://example.com">
+
+            <button onclick="browserGo()">
+                Go
+            </button>
+
+        </div>
+
+        <div class="browser-frame-wrap">
+
+            <div id="browserHome"
+                 class="browser-home">
+
+                <div>
+
+                    <div style="font-size:55px;">
+                        🌐
+                    </div>
+
+                    <h1>
+                        Kotim Browser
+                    </h1>
+
+                    <p>
+                        Wbudowana przeglądarka iframe
+                    </p>
+
+                    <input id="browserHomeInput"
+                           placeholder="https://example.com"
+                           onkeydown="
+                               if(event.key==='Enter')
+                                   browserGoHome();
+                           ">
+
+                    <div style="margin-top:12px;color:#7888a8;font-size:11px;">
+                        Niektóre strony blokują iframe.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <iframe id="browserFrame"
+                    title="Kotim Browser"
+                    src="about:blank"
+                    allow="fullscreen; autoplay; clipboard-read; clipboard-write">
+            </iframe>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         AI CLUB WINDOW
+         ==================================================== -->
+
+    <section class="window"
+             id="window-aiclub"
+             style="left: 10%; top: 7%; width: 850px; height: 600px;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                🐱
+            </div>
+
+            <div class="titlebar-title">
+                AI Club
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('aiclub')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('aiclub')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('aiclub')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="ai-layout">
+
+            <div class="ai-top">
+
+                <div class="ai-brand">
+
+                    <div class="ai-logo">
+                        🐱
+                    </div>
+
+                    <div>
+                        <h2>
+                            AI Club
+                        </h2>
+
+                        <p>
+                            Offline AI integrated with KotimOS
+                        </p>
+                    </div>
+
+                </div>
+
+                <div id="aiStatus"
+                     class="ai-status">
+                    Inicjalizacja AI Club...
+                </div>
+
+            </div>
+
+
+            <div class="ai-main">
+
+                <aside class="ai-models"
+                       id="aiModels">
+
+                    <div style="
+                        color:#8d9bb8;
+                        font-size:12px;
+                        padding:10px;
+                    ">
+                        Ładowanie modeli...
+                    </div>
+
+                </aside>
+
+
+                <main class="ai-chat">
+
+                    <div class="ai-chat-header">
+
+                        <div id="aiChatModel">
+                            Nie wybrano modelu
+                        </div>
+
+                        <div id="aiChatProvider">
+                            AI Club
+                        </div>
+
+                    </div>
+
+
+                    <div id="aiMessages">
+
+                        <div class="ai-message system">
+                            🐱 Wybierz model AI Club, aby rozpocząć.
+                        </div>
+
+                    </div>
+
+
+                    <div class="ai-input">
+
+                        <textarea
+                            id="aiInput"
+                            placeholder="Napisz wiadomość..."></textarea>
+
+                        <button onclick="sendAIMessage()">
+                            ➤
+                        </button>
+
+                    </div>
+
+                </main>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         FILES
+         ==================================================== -->
+
+    <section class="window"
+             id="window-files"
+             style="left: 15%; top: 13%; width: 650px; height: 500px;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                📁
+            </div>
+
+            <div class="titlebar-title">
+                Kotim Files
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('files')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('files')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('files')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="file-manager">
+
+            <div class="file-toolbar">
+
+                <button onclick="createVirtualFile()">
+                    + Plik
+                </button>
+
+                <button onclick="createVirtualFolder()">
+                    + Folder
+                </button>
+
+                <button onclick="refreshFiles()">
+                    ↻ Odśwież
+                </button>
+
+            </div>
+
+            <div class="file-path">
+                🏠 /home/cat
+            </div>
+
+            <div id="filesGrid"
+                 class="files-grid">
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         NOTEPAD
+         ==================================================== -->
+
+    <section class="window"
+             id="window-notepad"
+             style="left: 20%; top: 10%; width: 650px; height: 500px;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                📝
+            </div>
+
+            <div class="titlebar-title">
+                Kotim Notepad
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('notepad')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('notepad')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('notepad')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="notepad">
+
+            <div class="notepad-toolbar">
+
+                <button onclick="saveNotepad()">
+                    💾 Zapisz
+                </button>
+
+                <button onclick="clearNotepad()">
+                    🗑 Wyczyść
+                </button>
+
+            </div>
+
+            <textarea id="notepadText"
+                      placeholder="Zacznij pisać..."></textarea>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         CALCULATOR
+         ==================================================== -->
+
+    <section class="window"
+             id="window-calculator"
+             style="left: 30%; top: 12%; width: 400px; height: 500px;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                🧮
+            </div>
+
+            <div class="titlebar-title">
+                Calculator
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('calculator')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('calculator')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('calculator')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="window-content">
+
+            <div class="calculator">
+
+                <input id="calcDisplay"
+                       class="calc-display"
+                       readonly>
+
+                <div class="calc-grid">
+
+                    <button onclick="calcClear()">C</button>
+                    <button onclick="calcAdd('(')">(</button>
+                    <button onclick="calcAdd(')')">)</button>
+                    <button onclick="calcAdd('/')">÷</button>
+
+                    <button onclick="calcAdd('7')">7</button>
+                    <button onclick="calcAdd('8')">8</button>
+                    <button onclick="calcAdd('9')">9</button>
+                    <button onclick="calcAdd('*')">×</button>
+
+                    <button onclick="calcAdd('4')">4</button>
+                    <button onclick="calcAdd('5')">5</button>
+                    <button onclick="calcAdd('6')">6</button>
+                    <button onclick="calcAdd('-')">−</button>
+
+                    <button onclick="calcAdd('1')">1</button>
+                    <button onclick="calcAdd('2')">2</button>
+                    <button onclick="calcAdd('3')">3</button>
+                    <button onclick="calcAdd('+')">+</button>
+
+                    <button onclick="calcAdd('0')">0</button>
+                    <button onclick="calcAdd('.')">.</button>
+                    <button onclick="calcBackspace()">⌫</button>
+
+                    <button class="equals"
+                            onclick="calcResult()">
+                        =
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         SETTINGS
+         ==================================================== -->
+
+    <section class="window"
+             id="window-settings"
+             style="left: 25%; top: 10%; width: 620px; height: 500px;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                ⚙️
+            </div>
+
+            <div class="titlebar-title">
+                Settings
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('settings')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('settings')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('settings')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="window-content settings">
+
+            <div class="setting-section">
+
+                <h3>
+                    🎨 Wygląd
+                </h3>
+
+                <div class="setting-row">
+
+                    <label>
+                        Kolor akcentu
+                        <small>
+                            Zmienia kolor KotimOS
+                        </small>
+                    </label>
+
+                    <input id="accentColor"
+                           type="color"
+                           value="#4da3ff"
+                           onchange="changeAccent(this.value)">
+
+                </div>
+
+            </div>
+
+
+            <div class="setting-section">
+
+                <h3>
+                    🖥️ System
+                </h3>
+
+                <div class="setting-row">
+
+                    <label>
+                        System
+                        <small>
+                            KotimOS Web Edition
+                        </small>
+                    </label>
+
+                    <b>
+                        1.0
+                    </b>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <label>
+                        Kernel
+                        <small>
+                            KOTIM-WEB
+                        </small>
+                    </label>
+
+                    <b>
+                        1.0
+                    </b>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <label>
+                        Storage
+                        <small>
+                            Virtual LocalStorage
+                        </small>
+                    </label>
+
+                    <b>
+                        ONLINE
+                    </b>
+
+                </div>
+
+            </div>
+
+
+            <div class="setting-section">
+
+                <h3>
+                    🤖 AI Club
+                </h3>
+
+                <div class="setting-row">
+
+                    <label>
+                        Modele
+                        <small>
+                            Lokalne JSON-y
+                        </small>
+                    </label>
+
+                    <b id="settingsModelCount">
+                        0
+                    </b>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ====================================================
+         ABOUT
+         ==================================================== -->
+
+    <section class="window"
+             id="window-about"
+             style="left: 30%; top: 17%; width: 500px; height: 430px;">
+
+        <div class="titlebar">
+
+            <div class="titlebar-icon">
+                🐈
+            </div>
+
+            <div class="titlebar-title">
+                About KotimOS
+            </div>
+
+            <div class="window-buttons">
+
+                <button onclick="minimizeApp('about')">
+                    −
+                </button>
+
+                <button onclick="maximizeApp('about')">
+                    □
+                </button>
+
+                <button class="close"
+                        onclick="closeApp('about')">
+                    ×
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="about">
+
+            <div>
+
+                <div class="about-logo">
+                    🐱
+                </div>
+
+                <h1>
+                    KotimOS
+                </h1>
+
+                <p>
+                    Web Operating System
+                </p>
+
+                <p>
+                    Version 1.0
+                </p>
+
+                <p>
+                    🐾 Powered by HTML · CSS · JavaScript
+                </p>
+
+                <p>
+                    🤖 AI Club integration
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- ========================================================
+     TASKBAR
+     ========================================================= -->
+
+<div id="taskbar">
+
+    <button class="start-button"
+            onclick="toggleStartMenu()">
+        🐱
+    </button>
+
+    <div class="task-apps">
+
+        <button class="task-app"
+                title="Browser"
+                onclick="openApp('browser')">
+            🌐
+        </button>
+
+        <button class="task-app"
+                title="AI Club"
+                onclick="openApp('aiclub')">
+            🤖
+        </button>
+
+        <button class="task-app"
+                title="Files"
+                onclick="openApp('files')">
+            📁
+        </button>
+
+        <button class="task-app"
+                title="Notepad"
+                onclick="openApp('notepad')">
+            📝
+        </button>
+
+        <button class="task-app"
+                title="Calculator"
+                onclick="openApp('calculator')">
+            🧮
+        </button>
+
+    </div>
+
+    <div class="system-tray">
+
+        <span>
+            🌐
+        </span>
+
+        <span>
+            🔋
+        </span>
+
+        <span id="clock">
+            00:00
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     START MENU
+     ========================================================= -->
+
+<div id="startMenu">
+
+    <div class="start-header">
+
+        <div class="kotim-logo">
+            🐱
+        </div>
+
+        <div>
+
+            <h2>
+                KotimOS
+            </h2>
+
+            <p>
+                Web Operating System 1.0
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <input id="appSearch"
+           class="start-search"
+           placeholder="🔎 Szukaj aplikacji..."
+           oninput="filterApps(this.value)">
+
+
+    <div class="apps-grid"
+         id="startApps">
+
+        <button class="start-app"
+                data-name="browser"
+                onclick="openApp('browser')">
+
+            <b>🌐</b>
+            <span>Browser</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="ai club ai"
+                onclick="openApp('aiclub')">
+
+            <b>🤖</b>
+            <span>AI Club</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="files pliki"
+                onclick="openApp('files')">
+
+            <b>📁</b>
+            <span>Files</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="notepad notes"
+                onclick="openApp('notepad')">
+
+            <b>📝</b>
+            <span>Notepad</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="calculator kalkulator"
+                onclick="openApp('calculator')">
+
+            <b>🧮</b>
+            <span>Calculator</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="settings ustawienia"
+                onclick="openApp('settings')">
+
+            <b>⚙️</b>
+            <span>Settings</span>
+
+        </button>
+
+        <button class="start-app"
+                data-name="about informacje"
+                onclick="openApp('about')">
+
+            <b>🐈</b>
+            <span>About</span>
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   KOTIMOS CORE
+   ========================================================= */
+
+"use strict";
+
+const APP_NAMES = [
+    "browser",
+    "aiclub",
+    "files",
+    "notepad",
+    "calculator",
+    "settings",
+    "about"
+];
+
+let zIndex = 20;
+
+const windows = {};
+
+
+/* =========================================================
+   WINDOW INIT
+   ========================================================= */
+
+APP_NAMES.forEach(name => {
+
+    const element =
+        document.getElementById(
+            "window-" + name
+        );
+
+    if (element) {
+
+        windows[name] = {
+            element,
+            maximized: false
+        };
+
+        element.addEventListener(
+            "mousedown",
+            () => focusWindow(name)
+        );
+
+        element.addEventListener(
+            "touchstart",
+            () => focusWindow(name),
+            { passive: true }
+        );
+    }
+
+});
+
+
+/* =========================================================
+   OPEN APP
+   ========================================================= */
+
+function openApp(name) {
+
+    const app = windows[name];
+
+    if (!app) {
+        return;
+    }
+
+    app.element.classList.add("active");
+
+    focusWindow(name);
+
+    closeStartMenu();
+
+    if (name === "files") {
+        refreshFiles();
+    }
+
+    if (name === "notepad") {
+        loadNotepad();
+    }
+
+    if (name === "aiclub") {
+        loadAIClub();
+    }
+}
+
+
+/* =========================================================
+   CLOSE APP
+   ========================================================= */
+
+function closeApp(name) {
+
+    const app = windows[name];
+
+    if (!app) {
+        return;
+    }
+
+    app.element.classList.remove("active");
+}
+
+
+/* =========================================================
+   MINIMIZE
+   ========================================================= */
+
+function minimizeApp(name) {
+
+    const app = windows[name];
+
+    if (!app) {
+        return;
+    }
+
+    app.element.classList.remove("active");
+}
+
+
+/* =========================================================
+   MAXIMIZE
+   ========================================================= */
+
+function maximizeApp(name) {
+
+    const app = windows[name];
+
+    if (!app) {
+        return;
+    }
+
+    app.maximized =
+        !app.maximized;
+
+    app.element.classList.toggle(
+        "fullscreen",
+        app.maximized
+    );
+}
+
+
+/* =========================================================
+   FOCUS
+   ========================================================= */
+
+function focusWindow(name) {
+
+    const app = windows[name];
+
+    if (!app) {
+        return;
+    }
+
+    zIndex++;
+
+    app.element.style.zIndex =
+        zIndex;
+}
+
+
+/* =========================================================
+   START MENU
+   ========================================================= */
+
+function toggleStartMenu() {
+
+    document
+        .getElementById("startMenu")
+        .classList.toggle("open");
+}
+
+
+function closeStartMenu() {
+
+    document
+        .getElementById("startMenu")
+        .classList.remove("open");
+}
+
+
+/* =========================================================
+   APP SEARCH
+   ========================================================= */
+
+function filterApps(query) {
+
+    query =
+        query
+            .toLowerCase()
+            .trim();
+
+    document
+        .querySelectorAll(
+            "#startApps .start-app"
+        )
+        .forEach(button => {
+
+            const name =
+                button.dataset.name
+                    .toLowerCase();
+
+            button.style.display =
+                !query ||
+                name.includes(query)
+                    ? ""
+                    : "none";
+
+        });
+}
+
+
+/* =========================================================
+   CLOCK
+   ========================================================= */
+
+function updateClock() {
+
+    const now =
+        new Date();
+
+    const time =
+        now.toLocaleTimeString(
+            "pl-PL",
+            {
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    document
+        .getElementById("clock")
+        .textContent =
+        time;
+}
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+/* =========================================================
+   BROWSER
+   ========================================================= */
+
+const browserFrame =
+    document.getElementById(
+        "browserFrame"
+    );
+
+const browserURL =
+    document.getElementById(
+        "browserURL"
+    );
+
+const browserHome =
+    document.getElementById(
+        "browserHome"
+    );
+
+
+function normalizeURL(value) {
+
+    value =
+        String(value).trim();
+
+    if (!value) {
+        return null;
+    }
+
+    /*
+     * Jeśli użytkownik wpisze:
+     *
+     * google.com
+     *
+     * zmieniamy na:
+     *
+     * https://google.com
+     */
+
+    if (
+        !/^https?:\/\//i.test(value)
+    ) {
+
+        if (
+            value.includes(" ") ||
+            !value.includes(".")
+        ) {
+
+            return (
+                "https://www.google.com/search?q=" +
+                encodeURIComponent(value)
+            );
+        }
+
+        value =
+            "https://" + value;
+    }
+
+    try {
+
+        return new URL(value).href;
+
+    } catch {
+
+        return null;
+    }
+}
+
+
+function browserGo() {
+
+    const url =
+        normalizeURL(
+            browserURL.value
+        );
+
+    if (!url) {
+
+        alert(
+            "Niepoprawny adres URL."
+        );
+
+        return;
+    }
+
+    browserURL.value =
+        url;
+
+    browserFrame.src =
+        url;
+
+    browserHome.classList.add(
+        "hidden"
+    );
+
+    localStorage.setItem(
+        "kotimLastURL",
+        url
+    );
+}
+
+
+function browserGoHome() {
+
+    const input =
+        document.getElementById(
+            "browserHomeInput"
+        );
+
+    browserURL.value =
+        input.value;
+
+    browserGo();
+}
+
+
+function browserBack() {
+
+    try {
+        browserFrame.contentWindow.history.back();
+    } catch {
+        console.warn(
+            "Historia iframe niedostępna."
+        );
+    }
+}
+
+
+function browserForward() {
+
+    try {
+        browserFrame.contentWindow.history.forward();
+    } catch {
+        console.warn(
+            "Historia iframe niedostępna."
+        );
+    }
+}
+
+
+function browserReload() {
+
+    try {
+        browserFrame.contentWindow.location.reload();
+    } catch {
+        browserFrame.src =
+            browserFrame.src;
+    }
+}
+
+
+browserURL.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+            browserGo();
+        }
+
+    }
+);
+
+
+/* =========================================================
+   VIRTUAL FILE SYSTEM
+   ========================================================= */
+
+const DEFAULT_FILES = [
+
+    {
+        name: "Welcome.txt",
+        type: "file",
+        content:
+            "Witaj w KotimOS!\n🐱\n"
+    },
+
+    {
+        name: "AIClub",
+        type: "folder",
+        content: ""
+    },
+
+    {
+        name: "Documents",
+        type: "folder",
+        content: ""
+    },
+
+    {
+        name: "Pictures",
+        type: "folder",
+        content: ""
+    },
+
+    {
+        name: "System",
+        type: "folder",
+        content: ""
+    }
+
+];
+
+
+function getFiles() {
+
+    const raw =
+        localStorage.getItem(
+            "kotimVFS"
+        );
+
+    if (!raw) {
+
+        localStorage.setItem(
+            "kotimVFS",
+            JSON.stringify(
+                DEFAULT_FILES
+            )
+        );
+
+        return [
+            ...DEFAULT_FILES
+        ];
+    }
+
+    try {
+
+        const files =
+            JSON.parse(raw);
+
+        if (
+            Array.isArray(files)
+        ) {
+            return files;
+        }
+
+    } catch {}
+
+    return [
+        ...DEFAULT_FILES
+    ];
+}
+
+
+function saveFiles(files) {
+
+    localStorage.setItem(
+        "kotimVFS",
+        JSON.stringify(files)
+    );
+}
+
+
+function refreshFiles() {
+
+    const grid =
+        document.getElementById(
+            "filesGrid"
+        );
+
+    if (!grid) {
+        return;
+    }
+
+    const files =
+        getFiles();
+
+    grid.innerHTML = "";
+
+    files.forEach(
+        (file, index) => {
+
+            const item =
+                document.createElement(
+                    "button"
+                );
+
+            item.className =
+                "file-item";
+
+            const icon =
+                file.type === "folder"
+                    ? "📁"
+                    : "📄";
+
+            item.innerHTML = `
+                <div class="file-icon">
+                    ${icon}
+                </div>
+
+                <div class="file-name">
+                    ${escapeHTML(file.name)}
+                </div>
+            `;
+
+            item.onclick = () => {
+
+                if (
+                    file.type === "file"
+                ) {
+
+                    openVirtualFile(
+                        file,
+                        index
+                    );
+
+                } else {
+
+                    alert(
+                        `📁 Folder "${file.name}" otwarty.\n\nWirtualny system plików KotimOS 1.0`
+                    );
+                }
+
+            };
+
+            grid.appendChild(item);
+
+        }
+    );
+}
+
+
+function createVirtualFile() {
+
+    const name =
+        prompt(
+            "Nazwa pliku:"
+        );
+
+    if (!name) {
+        return;
+    }
+
+    const files =
+        getFiles();
+
+    files.push({
+        name,
+        type: "file",
+        content: ""
+    });
+
+    saveFiles(files);
+
+    refreshFiles();
+}
+
+
+function createVirtualFolder() {
+
+    const name =
+        prompt(
+            "Nazwa folderu:"
+        );
+
+    if (!name) {
+        return;
+    }
+
+    const files =
+        getFiles();
+
+    files.push({
+        name,
+        type: "folder",
+        content: ""
+    });
+
+    saveFiles(files);
+
+    refreshFiles();
+}
+
+
+function openVirtualFile(file, index) {
+
+    const content =
+        prompt(
+            `📄 ${file.name}\n\nEdytuj zawartość:`,
+            file.content || ""
+        );
+
+    if (content === null) {
+        return;
+    }
+
+    const files =
+        getFiles();
+
+    files[index].content =
+        content;
+
+    saveFiles(files);
+
+    refreshFiles();
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+/* =========================================================
+   NOTEPAD
+   ========================================================= */
+
+function loadNotepad() {
+
+    const textarea =
+        document.getElementById(
+            "notepadText"
+        );
+
+    textarea.value =
+        localStorage.getItem(
+            "kotimNotepad"
+        ) || "";
+}
+
+
+function saveNotepad() {
+
+    const textarea =
+        document.getElementById(
+            "notepadText"
+        );
+
+    localStorage.setItem(
+        "kotimNotepad",
+        textarea.value
+    );
+
+    alert(
+        "💾 Notatka została zapisana."
+    );
+}
+
+
+function clearNotepad() {
+
+    if (
+        !confirm(
+            "Wyczyścić notatnik?"
+        )
+    ) {
+        return;
+    }
+
+    document
+        .getElementById(
+            "notepadText"
+        )
+        .value = "";
+
+}
+
+
+/* =========================================================
+   CALCULATOR
+   ========================================================= */
+
+function calcAdd(value) {
+
+    const display =
+        document.getElementById(
+            "calcDisplay"
+        );
+
+    display.value += value;
+}
+
+
+function calcClear() {
+
+    document
+        .getElementById(
+            "calcDisplay"
+        )
+        .value = "";
+}
+
+
+function calcBackspace() {
+
+    const display =
+        document.getElementById(
+            "calcDisplay"
+        );
+
+    display.value =
+        display.value.slice(
+            0,
+            -1
+        );
+}
+
+
+function calcResult() {
+
+    const display =
+        document.getElementById(
+            "calcDisplay"
+        );
+
+    try {
+
+        /*
+         * Prosty kalkulator.
+         *
+         * Nie wykonujemy arbitralnego kodu
+         * poza operacjami matematycznymi.
+         */
+
+        const expression =
+            display.value;
+
+        if (
+            !/^[0-9+\-*/().\s]+$/.test(
+                expression
+            )
+        ) {
+            throw new Error();
+        }
+
+        const result =
+            Function(
+                `"use strict"; return (${expression})`
+            )();
+
+        display.value =
+            String(result);
+
+    } catch {
+
+        display.value =
+            "ERROR";
+    }
+}
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+function changeAccent(color) {
+
+    document
+        .documentElement
+        .style
+        .setProperty(
+            "--blue",
+            color
+        );
+
+    localStorage.setItem(
+        "kotimAccent",
+        color
+    );
+}
+
+
+function loadSettings() {
+
+    const color =
+        localStorage.getItem(
+            "kotimAccent"
+        );
+
+    if (color) {
+
+        changeAccent(color);
+
+        const input =
+            document.getElementById(
+                "accentColor"
+            );
+
+        if (input) {
+            input.value =
+                color;
+        }
+    }
+
+}
+
+
+loadSettings();
+
+
+/* =========================================================
+   AI CLUB
+   ========================================================= */
+
+const AI_CONFIG_FILE =
+    "config.json";
+
+const AI_COMMUNITY_INDEX =
+    "community/index.json";
+
+
+const AI_FALLBACK_FILES = [
+
+    "GPT-OSS-20B.json",
+    "Qwen3-8B.json",
+    "Gemma-3-12B.json",
+    "DeepSeek-R1-14B.json",
+    "Ultra Meow 4.json",
+    "Dog-1.0.json"
+
+];
+
+
+let aiModels = [];
+
+let aiCommunityModels = [];
+
+let selectedAIModel = null;
+
+let aiLoaded = false;
+
+
+/* =========================================================
+   AI CLUB SAFE FETCH
+   ========================================================= */
+
+async function aiFetchJSON(url) {
+
+    const separator =
+        url.includes("?")
+            ? "&"
+            : "?";
+
+    const response =
+        await fetch(
+            url +
+            separator +
+            "v=" +
+            Date.now(),
+            {
+                cache: "no-store"
+            }
+        );
+
+    if (!response.ok) {
+
+        throw new Error(
+            `HTTP ${response.status}`
+        );
+    }
+
+    const text =
+        await response.text();
+
+    try {
+
+        return JSON.parse(text);
+
+    } catch {
+
+        throw new Error(
+            `Niepoprawny JSON: ${url}`
+        );
+    }
+
+}
+
+
+/* =========================================================
+   AI CONFIG
+   ========================================================= */
+
+async function aiLoadConfig() {
+
+    try {
+
+        return await aiFetchJSON(
+            AI_CONFIG_FILE
+        );
+
+    } catch {
+
+        return null;
+    }
+
+}
+
+
+function aiGetFilesFromConfig(config) {
+
+    if (!config) {
+        return [];
+    }
+
+    const result = [];
+
+    if (
+        Array.isArray(config.models)
+    ) {
+
+        config.models.forEach(
+            item => {
+
+                if (
+                    typeof item ===
+                    "string"
+                ) {
+
+                    result.push(item);
+
+                } else if (
+                    item &&
+                    typeof item ===
+                    "object"
+                ) {
+
+                    const file =
+                        item.file ||
+                        item.json ||
+                        item.path;
+
+                    if (
+                        typeof file ===
+                        "string"
+                    ) {
+                        result.push(file);
+                    }
+                }
+
+            }
+        );
+    }
+
+    if (
+        result.length === 0 &&
+        Array.isArray(config.lm)
+    ) {
+
+        config.lm.forEach(
+            item => {
+
+                if (
+                    typeof item ===
+                    "string"
+                ) {
+
+                    result.push(item);
+
+                } else if (
+                    item &&
+                    typeof item ===
+                    "object"
+                ) {
+
+                    const file =
+                        item.file ||
+                        item.json ||
+                        item.path;
+
+                    if (
+                        typeof file ===
+                        "string"
+                    ) {
+                        result.push(file);
+                    }
+                }
+
+            }
+        );
+    }
+
+    return [
+        ...new Set(
+            result
+        )
+    ];
+}
+
+
+/* =========================================================
+   AI MODEL PATH
+   ========================================================= */
+
+function aiModelPath(file) {
+
+    let path =
+        String(file)
+            .trim()
+            .replace(
+                /^\.\/+/,
+                ""
+            );
+
+    if (
+        path.startsWith(
+            "models/"
+        )
+    ) {
+
+        path =
+            path.slice(
+                7
+            );
+    }
+
+    return (
+        "models/" +
+        path
+            .split("/")
+            .map(
+                part =>
+                    encodeURIComponent(
+                        part
+                    )
+            )
+            .join("/")
+    );
+}
+
+
+/* =========================================================
+   AI VALIDATION
+   ========================================================= */
+
+function aiValidateModel(model) {
+
+    if (
+        !model ||
+        typeof model !==
+        "object"
+    ) {
+        throw new Error(
+            "Model nie jest obiektem"
+        );
+    }
+
+    if (
+        !model.id ||
+        !model.name
+    ) {
+        throw new Error(
+            "Model musi mieć id i name"
+        );
+    }
+
+    if (
+        !Array.isArray(
+            model.examples
+        )
+    ) {
+        model.examples = [];
+    }
+
+    model.provider =
+        typeof model.provider ===
+        "string"
+            ? model.provider
+            : "AI Club Local";
+
+    model.description =
+        typeof model.description ===
+        "string"
+            ? model.description
+            : "Lokalny model AI.";
+
+    model.community = false;
+
+    return model;
+}
+
+
+/* =========================================================
+   LOAD OFFICIAL AI MODELS
+   ========================================================= */
+
+async function aiLoadOfficial() {
+
+    const config =
+        await aiLoadConfig();
+
+    let files =
+        aiGetFilesFromConfig(
+            config
+        );
+
+    if (
+        files.length === 0
+    ) {
+
+        files =
+            AI_FALLBACK_FILES;
+    }
+
+    const loaded = [];
+
+    for (
+        const file
+        of files
+    ) {
+
+        try {
+
+            const model =
+                await aiFetchJSON(
+                    aiModelPath(file)
+                );
+
+            aiValidateModel(
+                model
+            );
+
+            loaded.push(model);
+
+        } catch (error) {
+
+            console.warn(
+                "[AI Club] Nie udało się załadować:",
+                file,
+                error
+            );
+
+        }
+
+    }
+
+    return loaded;
+}
+
+
+/* =========================================================
+   LOAD COMMUNITY
+   ========================================================= */
+
+async function aiLoadCommunity() {
+
+    try {
+
+        const registry =
+            await aiFetchJSON(
+                AI_COMMUNITY_INDEX
+            );
+
+        if (
+            !registry ||
+            !Array.isArray(
+                registry.models
+            )
+        ) {
+            return [];
+        }
+
+        const loaded = [];
+
+        for (
+            const entry
+            of registry.models
+        ) {
+
+            try {
+
+                if (
+                    !entry ||
+                    typeof entry.file !==
+                    "string"
+                ) {
+                    continue;
+                }
+
+                const path =
+                    "community/" +
+                    entry.file
+                        .replace(
+                            /^\/+/,
+                            ""
+                        )
+                        .split("/")
+                        .map(
+                            part =>
+                                encodeURIComponent(
+                                    part
+                                )
+                        )
+                        .join("/");
+
+                const model =
+                    await aiFetchJSON(
+                        path
+                    );
+
+                if (
+                    !model ||
+                    !model.id ||
+                    !model.name
+                ) {
+                    continue;
+                }
+
+                if (
+                    !Array.isArray(
+                        model.examples
+                    )
+                ) {
+                    model.examples = [];
+                }
+
+                model.community = true;
+
+                model.author =
+                    model.author ||
+                    entry.author ||
+                    "Community";
+
+                model.version =
+                    model.version ||
+                    entry.version ||
+                    "1.0";
+
+                model.provider =
+                    model.provider ||
+                    "AI Club Community";
+
+                loaded.push(model);
+
+            } catch (error) {
+
+                console.warn(
+                    "[AI Club] Community error:",
+                    error
+                );
+
+            }
+
+        }
+
+        return loaded;
+
+    } catch {
+
+        return [];
+    }
+
+}
+
+
+/* =========================================================
+   RENDER AI MODELS
+   ========================================================= */
+
+function renderAIModels() {
+
+    const container =
+        document.getElementById(
+            "aiModels"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    if (
+        aiModels.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div style="
+                color:#9ba9c7;
+                padding:10px;
+                font-size:12px;
+            ">
+                Brak modeli.<br><br>
+                Sprawdź folder <b>models/</b>.
+            </div>
+        `;
+
+        return;
+    }
+
+    aiModels.forEach(
+        model => {
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "ai-model-card";
+
+            card.innerHTML = `
+
+                <h3>
+                    🐱 ${escapeHTML(
+                        model.name
+                    )}
+                </h3>
+
+                <p>
+                    ${escapeHTML(
+                        model.provider ||
+                        "AI Club Local"
+                    )}
+                </p>
+
+                <button>
+                    Użyj modelu
+                </button>
+
+            `;
+
+            card
+                .querySelector("button")
+                .onclick = () => {
+
+                    aiSelectModel(
+                        model
+                    );
+
+                };
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+
+
+    const settingsCount =
+        document.getElementById(
+            "settingsModelCount"
+        );
+
+    if (settingsCount) {
+
+        settingsCount.textContent =
+            aiModels.length;
+    }
+
+}
+
+
+/* =========================================================
+   SELECT AI MODEL
+   ========================================================= */
+
+function aiSelectModel(model) {
+
+    selectedAIModel =
+        model;
+
+    document
+        .getElementById(
+            "aiChatModel"
+        )
+        .textContent =
+        model.name;
+
+    document
+        .getElementById(
+            "aiChatProvider"
+        )
+        .textContent =
+        `${model.provider || "AI Club Local"} · OFFLINE`;
+
+    const messages =
+        document.getElementById(
+            "aiMessages"
+        );
+
+    messages.innerHTML = "";
+
+    aiAddMessage(
+        "system",
+        `🐱 Rozpoczęto rozmowę z ${model.name}.`
+    );
+
+}
+
+
+/* =========================================================
+   AI LOAD
+   ========================================================= */
+
+async function loadAIClub() {
+
+    if (aiLoaded) {
+        return;
+    }
+
+    const status =
+        document.getElementById(
+            "aiStatus"
+        );
+
+    status.textContent =
+        "🔄 Ładowanie lokalnych modeli...";
+
+    /*
+     * Fetch działa poprawnie przez HTTP/HTTPS.
+     *
+     * file:// może zostać zablokowane
+     * przez przeglądarkę.
+     */
+
+    if (
+        location.protocol ===
+        "file:"
+    ) {
+
+        status.textContent =
+            "⚠️ Uruchom przez localhost — file:// może blokować JSON.";
+
+        renderAIModels();
+
+        return;
+    }
+
+    const official =
+        await aiLoadOfficial();
+
+    const community =
+        await aiLoadCommunity();
+
+    aiModels = [
+        ...official,
+        ...community
+    ];
+
+    aiCommunityModels =
+        community;
+
+    renderAIModels();
+
+    aiLoaded = true;
+
+    status.textContent =
+        `🟢 AI Club ONLINE · ${aiModels.length} modeli · lokalne JSON`;
+
+}
+
+
+/* =========================================================
+   AI NORMALIZATION
+   ========================================================= */
+
+function aiNormalize(text) {
+
+    return String(text)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+        .replace(
+            /ł/g,
+            "l"
+        )
+        .replace(
+            /[^\p{L}\p{N}\s]/gu,
+            ""
+        )
+        .replace(
+            /\s+/g,
+            " "
+        )
+        .trim();
+
+}
+
+
+/* =========================================================
+   AI LEVENSHTEIN
+   ========================================================= */
+
+function aiLevenshtein(a, b) {
+
+    const matrix = [];
+
+    for (
+        let i = 0;
+        i <= b.length;
+        i++
+    ) {
+
+        matrix[i] = [i];
+
+    }
+
+    for (
+        let j = 0;
+        j <= a.length;
+        j++
+    ) {
+
+        matrix[0][j] = j;
+
+    }
+
+    for (
+        let i = 1;
+        i <= b.length;
+        i++
+    ) {
+
+        for (
+            let j = 1;
+            j <= a.length;
+            j++
+        ) {
+
+            if (
+                b[i - 1] ===
+                a[j - 1]
+            ) {
+
+                matrix[i][j] =
+                    matrix[i - 1][j - 1];
+
+            } else {
+
+                matrix[i][j] =
+                    Math.min(
+                        matrix[i - 1][j] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j - 1] + 1
+                    );
+
+            }
+
+        }
+
+    }
+
+    return matrix[
+        b.length
+    ][
+        a.length
+    ];
+
+}
+
+
+/* =========================================================
+   AI SIMILARITY
+   ========================================================= */
+
+function aiSimilarity(a, b) {
+
+    if (a === b) {
+        return 1;
+    }
+
+    if (!a || !b) {
+        return 0;
+    }
+
+    if (
+        a.includes(b) ||
+        b.includes(a)
+    ) {
+
+        const smaller =
+            Math.min(
+                a.length,
+                b.length
+            );
+
+        const larger =
+            Math.max(
+                a.length,
+                b.length
+            );
+
+        if (
+            smaller /
+            larger >=
+            .65
+        ) {
+            return .90;
+        }
+
+    }
+
+    const distance =
+        aiLevenshtein(
+            a,
+            b
+        );
+
+    const max =
+        Math.max(
+            a.length,
+            b.length
+        );
+
+    return Math.max(
+        0,
+        1 -
+        distance / max
+    );
+
+}
+
+
+/* =========================================================
+   AI FIND ANSWER
+   ========================================================= */
+
+function aiFindAnswer(
+    input,
+    model
+) {
+
+    if (
+        !model ||
+        !Array.isArray(
+            model.examples
+        )
+    ) {
+        return null;
+    }
+
+    const normalized =
+        aiNormalize(
+            input
+        );
+
+    let bestAnswer =
+        null;
+
+    let bestScore =
+        0;
+
+    for (
+        const example
+        of model.examples
+    ) {
+
+        if (
+            !example ||
+            typeof example !==
+            "object"
+        ) {
+            continue;
+        }
+
+        let questions = [];
+
+        if (
+            Array.isArray(
+                example.questions
+            )
+        ) {
+
+            questions =
+                example.questions;
+
+        } else if (
+            typeof example.question ===
+            "string"
+        ) {
+
+            questions = [
+                example.question
+            ];
+
+        }
+
+        for (
+            const question
+            of questions
+        ) {
+
+            if (
+                typeof question !==
+                "string"
+            ) {
+                continue;
+            }
+
+            const q =
+                aiNormalize(
+                    question
+                );
+
+            if (
+                normalized === q
+            ) {
+
+                return (
+                    example.answer ||
+                    null
+                );
+
+            }
+
+            const score =
+                aiSimilarity(
+                    normalized,
+                    q
+                );
+
+            if (
+                score >
+                bestScore
+            ) {
+
+                bestScore =
+                    score;
+
+                bestAnswer =
+                    example.answer;
+
+            }
+
+        }
+
+    }
+
+    if (
+        bestScore >= .72
+    ) {
+
+        return bestAnswer;
+
+    }
+
+    return null;
+
+}
+
+
+/* =========================================================
+   AI UNKNOWN
+   ========================================================= */
+
+function aiUnknown(text) {
+
+    const responses = [
+
+        `Nie mam jeszcze odpowiedzi na „${text}”. 🤔`,
+
+        "Tego nie ma jeszcze w lokalnej bazie wiedzy tego modelu.",
+
+        "Nie znalazłem wystarczająco podobnego pytania w JSON-ie.",
+
+        "Hmm... tego pytania jeszcze mnie nie nauczono. 😺"
+
+    ];
+
+    return responses[
+        Math.floor(
+            Math.random() *
+            responses.length
+        )
+    ];
+
+}
+
+
+/* =========================================================
+   AI MESSAGE
+   ========================================================= */
+
+function aiAddMessage(
+    type,
+    text
+) {
+
+    const messages =
+        document.getElementById(
+            "aiMessages"
+        );
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+    element.className =
+        `ai-message ${type}`;
+
+    element.textContent =
+        text;
+
+    messages.appendChild(
+        element
+    );
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+
+/* =========================================================
+   SEND AI MESSAGE
+   ========================================================= */
+
+async function sendAIMessage() {
+
+    if (
+        !selectedAIModel
+    ) {
+
+        aiAddMessage(
+            "system",
+            "🐱 Najpierw wybierz model."
+        );
+
+        return;
+    }
+
+    const input =
+        document.getElementById(
+            "aiInput"
+        );
+
+    const text =
+        input.value.trim();
+
+    if (!text) {
+        return;
+    }
+
+    input.value = "";
+
+    aiAddMessage(
+        "user",
+        text
+    );
+
+    /*
+     * AI Club w tym OS korzysta
+     * z dokładnie tego samego mechanizmu
+     * examples[] co podany przez Ciebie app.js.
+     */
+
+    const cost =
+        Number(
+            selectedAIModel.points_per_message
+        ) || 1;
+
+    let points =
+        Number(
+            localStorage.getItem(
+                "aiClubPoints"
+            )
+        );
+
+    if (
+        !Number.isFinite(points)
+    ) {
+        points = 100;
+    }
+
+    if (
+        points < cost
+    ) {
+
+        aiAddMessage(
+            "system",
+            `Brakuje punktów. Wiadomość kosztuje ${cost} ⭐.`
+        );
+
+        return;
+    }
+
+    points -= cost;
+
+    localStorage.setItem(
+        "aiClubPoints",
+        String(points)
+    );
+
+    await new Promise(
+        resolve =>
+            setTimeout(
+                resolve,
+                250
+            )
+    );
+
+    const answer =
+        aiFindAnswer(
+            text,
+            selectedAIModel
+        );
+
+    aiAddMessage(
+        "ai",
+        answer ||
+        aiUnknown(text)
+    );
+
+}
+
+
+/* =========================================================
+   ENTER IN AI CHAT
+   ========================================================= */
+
+document
+    .getElementById(
+        "aiInput"
+    )
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendAIMessage();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   KEYBOARD
+   ========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Escape"
+        ) {
+
+            closeStartMenu();
+
+            APP_NAMES.forEach(
+                name => {
+
+                    const app =
+                        windows[name];
+
+                    if (
+                        app &&
+                        app.element.classList.contains(
+                            "fullscreen"
+                        )
+                    ) {
+
+                        app.element.classList.remove(
+                            "fullscreen"
+                        );
+
+                        app.maximized =
+                            false;
+
+                    }
+
+                }
+            );
+
+        }
+
+        /*
+         * Ctrl + L → Browser
+         */
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() ===
+            "l"
+        ) {
+
+            const browser =
+                windows.browser;
+
+            if (
+                browser &&
+                browser.element.classList.contains(
+                    "active"
+                )
+            ) {
+
+                event.preventDefault();
+
+                browserURL.focus();
+
+                browserURL.select();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CLOSE START MENU WHEN CLICKING DESKTOP
+   ========================================================= */
+
+document
+    .getElementById(
+        "desktop"
+    )
+    .addEventListener(
+        "mousedown",
+        event => {
+
+            if (
+                event.target.closest(
+                    ".window"
+                )
+            ) {
+                return;
+            }
+
+            closeStartMenu();
+
+        }
+    );
+
+
+/* =========================================================
+   RESTORE LAST BROWSER PAGE
+   ========================================================= */
+
+const lastURL =
+    localStorage.getItem(
+        "kotimLastURL"
+    );
+
+if (lastURL) {
+
+    browserURL.value =
+        lastURL;
+
+}
+
+
+/* =========================================================
+   INITIAL FILES
+   ========================================================= */
+
+refreshFiles();
+
+
+/* =========================================================
+   WELCOME
+   ========================================================= */
+
+setTimeout(
+    () => {
+
+        openApp(
+            "about"
+        );
+
+    },
+    300
+);
+
+</script>
+
+</body>
+</html>
